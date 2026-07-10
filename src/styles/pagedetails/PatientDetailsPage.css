@@ -1,0 +1,324 @@
+/* ═══════════════════════════════════════════════════
+   PATIENT DETAILS PAGE
+   ═══════════════════════════════════════════════════ */
+
+.patient-details__back {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-blue, #2563eb);
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+
+.patient-details__back:hover {
+  text-decoration: underline;
+}
+
+.patient-details__not-found {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 24px;
+}
+
+.patient-details__not-found .btn {
+  margin-top: 8px;
+}
+
+/* ── Dental Chart Placeholder ────────────────────── */
+.dental-chart-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 40px 24px;
+  border-style: dashed;
+  border-color: var(--color-border, #e2e8f0);
+  background: var(--color-surface, #f8fafc);
+}
+
+.dental-chart-placeholder__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--color-blue, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.dental-chart-placeholder__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-navy, #1e3a5f);
+  margin: 0;
+}
+
+.dental-chart-placeholder__sub {
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #64748b);
+  margin: 0;
+  max-width: 480px;
+  line-height: 1.5;
+}
+
+/* ── Patient Info Grid ───────────────────────────── */
+.patient-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.patient-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.patient-info-item--wide {
+  grid-column: span 2;
+}
+
+.patient-info-item__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted, #64748b);
+}
+
+.patient-info-item__value {
+  font-size: 0.9rem;
+  color: var(--color-text, #1e293b);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* ── Case List / Case Card ───────────────────────── */
+.case-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.case-card {
+  border: 1.5px solid var(--color-border, #e2e8f0);
+  border-radius: 12px;
+  padding: 16px 18px;
+  background: var(--color-surface, #f8fafc);
+}
+
+.case-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.case-card__tooth {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--color-navy, #1e3a5f);
+}
+
+.case-card__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.case-card__item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.case-card__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted, #64748b);
+}
+
+.case-card__value {
+  font-size: 0.85rem;
+  color: var(--color-text, #1e293b);
+  word-break: break-word;
+}
+
+/* ── Treatment Timeline ───────────────────────────── */
+.treatment-timeline {
+  border-top: 1.5px solid var(--color-border, #e2e8f0);
+  padding-top: 14px;
+}
+
+.treatment-timeline__title {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted, #64748b);
+  margin-bottom: 12px;
+}
+
+.treatment-timeline__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.treatment-timeline__step {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+  min-width: 130px;
+  position: relative;
+  padding-right: 12px;
+}
+
+.treatment-timeline__step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: calc(100% - 6px);
+  width: calc(100% - 16px);
+  max-width: 60px;
+  height: 2px;
+  background: var(--color-border, #e2e8f0);
+}
+
+.treatment-timeline__step--done:not(:last-child)::after {
+  background: var(--color-blue, #2563eb);
+}
+
+.treatment-timeline__dot {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  border-radius: 50%;
+  background: var(--color-border, #e2e8f0);
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.treatment-timeline__step--done .treatment-timeline__dot {
+  background: var(--color-blue, #2563eb);
+}
+
+.treatment-timeline__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.treatment-timeline__stage {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+}
+
+.treatment-timeline__step--done .treatment-timeline__stage {
+  color: var(--color-navy, #1e3a5f);
+}
+
+.treatment-timeline__date {
+  font-size: 0.72rem;
+  color: var(--color-text-muted, #94a3b8);
+}
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ════════════════════════════════════════════════ */
+
+/* Tablet (≤ 1023px) */
+@media (max-width: 1023px) {
+  .patient-info-grid,
+  .case-card__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .patient-info-item--wide {
+    grid-column: span 2;
+  }
+
+  .treatment-timeline__step {
+    min-width: 45%;
+  }
+
+  .treatment-timeline__step:not(:last-child)::after {
+    display: none;
+  }
+}
+
+/* Tablet portrait (≤ 767px) */
+@media (max-width: 767px) {
+  .dental-chart-placeholder {
+    padding: 28px 16px;
+  }
+
+  .dental-chart-placeholder__icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .dental-chart-placeholder__title {
+    font-size: 0.9rem;
+  }
+
+  .dental-chart-placeholder__sub {
+    font-size: 0.8rem;
+  }
+
+  .patient-info-grid,
+  .case-card__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .patient-info-item--wide {
+    grid-column: span 2;
+  }
+
+  .case-card {
+    padding: 14px;
+  }
+}
+
+/* Mobile (≤ 479px) */
+@media (max-width: 479px) {
+  .patient-info-grid,
+  .case-card__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .patient-info-item--wide {
+    grid-column: span 1;
+  }
+
+  .treatment-timeline__step {
+    min-width: 100%;
+  }
+
+  .case-card__header {
+    flex-direction: row;
+    align-items: center;
+  }
+}

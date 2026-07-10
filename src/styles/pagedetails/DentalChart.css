@@ -1,0 +1,234 @@
+/* ================================================================
+   DentalChart.css
+   ================================================================ */
+
+/* ── Wrapper ── */
+.dental-chart {
+  width: 100%;
+}
+
+.dental-chart--disabled {
+  opacity: 0.38;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Legend ── */
+.dental-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: #F1F5F9;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+}
+
+.dental-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.dental-chart__legend-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ── Scroll wrapper ── */
+.dental-chart__scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.dental-chart__inner {
+  min-width: 620px;
+  padding: 8px 20px 4px;
+}
+
+/* ── Quadrant labels ── */
+.dental-chart__qlabels {
+  display: flex;
+  justify-content: space-around;
+  padding: 0 44px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dental-chart__qlabels--top  { margin-bottom: 6px; }
+.dental-chart__qlabels--bottom { margin-top: 6px; }
+
+/* ── Arch rows ── */
+.dental-chart__arch {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+}
+
+.dental-chart__arch--upper { align-items: flex-end; }
+.dental-chart__arch--lower { align-items: flex-start; }
+
+/* ── Midline gap between quadrants ── */
+.dental-chart__midline-gap {
+  width: 10px;
+  border-left: 2px dashed #CBD5E1;
+  align-self: stretch;
+  flex-shrink: 0;
+  margin: 0 1px;
+}
+
+/* ── Occlusal line ── */
+.dental-chart__occlusal {
+  height: 3px;
+  margin: 0 16px;
+  background: linear-gradient(to right, #CBD5E1, #94A3B8 50%, #CBD5E1);
+  border-radius: 2px;
+}
+
+/* ── Hint ── */
+.dental-chart__hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #64748B;
+  text-align: center;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* ================================================================
+   TOOTH BUTTON
+   ================================================================ */
+
+.tooth-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 2px 1px;
+  cursor: pointer;
+  gap: 0;
+  transition: transform 0.12s ease, filter 0.12s ease;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.tooth-btn:hover {
+  transform: scaleY(1.07);
+  z-index: 1;
+}
+
+.tooth-btn:focus-visible {
+  outline: 2px solid #1D6FD8;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.tooth-btn--pending {
+  filter: drop-shadow(0 0 4px rgba(100, 116, 139, 0.7));
+}
+
+.tooth-btn--assigned {
+  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.45));
+}
+
+/* ── Tooth number label ── */
+.tooth__label {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  color: #94A3B8;
+  line-height: 1;
+  margin: 2px 0;
+  font-family: 'Inter', 'Arial', sans-serif;
+  letter-spacing: 0;
+  text-align: center;
+  min-width: 14px;
+}
+
+.tooth-btn--pending .tooth__label,
+.tooth-btn--assigned .tooth__label {
+  color: #475569;
+}
+
+/* ── Crown ── */
+.tooth__crown {
+  background: #EEF2F7;
+  border: 1.5px solid #C1CAD8;
+  box-sizing: border-box;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.tooth__crown--upper {
+  border-radius: 3px 3px 0 0;
+  border-bottom: none;
+}
+
+.tooth__crown--lower {
+  border-radius: 0 0 3px 3px;
+  border-top: none;
+}
+
+/* ── Roots container ── */
+.tooth__roots {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+
+.tooth__roots--upper { align-items: flex-end; }
+.tooth__roots--lower { align-items: flex-start; }
+
+/* ── Individual root ── */
+.tooth__root {
+  width: 5px;
+  background: #D1DAE8;
+  border: 1px solid #C1CAD8;
+  box-sizing: border-box;
+  transition: background 0.18s ease;
+}
+
+.tooth__root--upper {
+  border-radius: 4px 4px 0 0;
+  border-bottom: none;
+}
+
+.tooth__root--lower {
+  border-radius: 0 0 4px 4px;
+  border-top: none;
+}
+
+/* ── Canine has slightly wider root ── */
+.tooth-btn--canine .tooth__root { width: 6px; }
+
+/* ── Hover crown highlight ── */
+.tooth-btn:hover .tooth__crown:not([style*="background"]) {
+  background: #E2E8F4;
+  border-color: #94A3B8;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+
+@media (max-width: 500px) {
+  .dental-chart__inner { min-width: 580px; }
+
+  .tooth__label { font-size: 7.5px; }
+
+  .tooth__crown {
+    /* Slightly narrower crowns on smallest screens */
+    transform: scaleX(0.9);
+    transform-origin: center;
+  }
+}

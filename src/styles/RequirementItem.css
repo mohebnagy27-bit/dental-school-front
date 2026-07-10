@@ -1,0 +1,46 @@
+/* ── RequirementItem ──────────────────────────────────────────────── */
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Circle icon — switches between unmet (gray dot) and met (green check) */
+.requirement-item__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background-color 0.20s ease, color 0.20s ease;
+}
+
+.requirement-item__icon--met {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.requirement-item__icon--unmet {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-300);
+}
+
+/* Small dot shown inside unmet icon */
+.requirement-item__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-gray-300);
+}
+
+/* Label text */
+.requirement-item__label {
+  font-size: 11px;
+  transition: color 0.20s ease;
+}
+
+.requirement-item__label--met   { color: var(--color-gray-700); }
+.requirement-item__label--unmet { color: var(--color-gray-400); }

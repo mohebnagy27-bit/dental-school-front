@@ -1,0 +1,39 @@
+/* ═══════════════════════════════════════════════════
+   COMPLETED CASES PAGE
+   Page shell, header, toolbar, and 3-up stat grid come
+   from ../styles/shared-layout.css. This file only
+   contains page-specific tweaks.
+   ═══════════════════════════════════════════════════ */
+
+.page-shell__content > .recent-table {
+  width: 100%;
+}
+
+/* "Most Common Treatment" can be a longer string than a
+   typical numeric stat — allow it to wrap gracefully
+   without breaking the card layout. */
+.stat-grid-3 .stat-card__value {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 767px) {
+  /* On 2-up tablet grid, slightly reduce the value
+     font-size only where the text is long, so it
+     doesn't overpower the card on narrower widths. */
+  .stat-grid-3 .stat-card__value {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stat-grid-3 .stat-card__value {
+    font-size: 1.3rem;
+  }
+}

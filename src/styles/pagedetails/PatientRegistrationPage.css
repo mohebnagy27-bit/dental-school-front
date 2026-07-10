@@ -1,0 +1,1018 @@
+/* ================================================================
+   PatientRegistrationPage.css
+   ================================================================ */
+
+.dashboard-main {
+  margin-left: 260px;
+}
+
+/* ── Page wrapper ── */
+.reg-page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Page header ── */
+.reg-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.reg-page__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0a1628;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.reg-page__subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.reg-page__header-actions {
+  flex-shrink: 0;
+}
+
+.reg-page__save-btn {
+  padding: 10px 22px;
+  background: #1d6fd8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.reg-page__save-btn:hover {
+  background: #1a62c4;
+}
+
+/* ── Patient valid indicator ── */
+.reg-patient-valid {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #15803d;
+  font-weight: 500;
+}
+
+/* ================================================================
+   SECTION
+   ================================================================ */
+
+.reg-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(10, 22, 40, 0.06);
+  overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.reg-section--locked {
+  opacity: 0.42;
+  pointer-events: none;
+  user-select: none;
+}
+
+.reg-section__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 22px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.reg-section__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0a1628;
+  margin: 0;
+}
+
+.reg-section__badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 20px;
+  background: #eff6ff;
+  color: #1d6fd8;
+  border: 1px solid #bfdbfe;
+  letter-spacing: 0.02em;
+}
+
+.reg-section__lock {
+  margin-left: auto;
+  font-size: 13px;
+}
+
+.reg-section__body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── Summary section variant ── */
+.reg-section--summary .reg-section__body {
+  padding: 18px 22px;
+}
+
+/* ── Section actions row ── */
+.reg-section__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.reg-section__actions-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ================================================================
+   FORM UTILITIES
+   ================================================================ */
+
+/* ── Grid rows ── */
+.reg-row {
+  display: grid;
+  gap: 16px;
+}
+
+.reg-row--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.reg-row--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* ── Field ── */
+.reg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.reg-field__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.reg-field__required {
+  color: #ef4444;
+}
+
+.reg-field__hint {
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.reg-field__error {
+  font-size: 12px;
+  color: #ef4444;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Inputs ── */
+.reg-input,
+.reg-select,
+.reg-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+  background: #fff;
+  font-family: inherit;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  appearance: auto;
+}
+
+.reg-input:focus,
+.reg-select:focus,
+.reg-textarea:focus {
+  outline: none;
+  border-color: #1d6fd8;
+  box-shadow: 0 0 0 3px rgba(29, 111, 216, 0.12);
+}
+
+.reg-input--error,
+.reg-select--error {
+  border-color: #ef4444;
+}
+
+.reg-input--error:focus,
+.reg-select--error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.reg-textarea {
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.55;
+}
+
+.reg-select {
+  cursor: pointer;
+}
+
+/* ── Fieldsets ── */
+.reg-fieldset {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px 14px;
+  margin: 0;
+}
+
+.reg-fieldset--inline {
+  border: none;
+  padding: 8px 0;
+  margin: 0;
+}
+
+.reg-fieldset__legend {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #475569;
+  padding: 0 4px;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+/* ── Radio group ── */
+.reg-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.reg-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  color: #374151;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.reg-radio-label input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #1d6fd8;
+  cursor: pointer;
+}
+
+/* ── Checkbox label ── */
+.reg-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13.5px;
+  color: #374151;
+  cursor: pointer;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.reg-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #1d6fd8;
+  cursor: pointer;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.reg-checkbox-label--lg {
+  align-items: center;
+  font-size: 14px;
+}
+
+.reg-checkbox-label__sub {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+/* ── Subsection (inside a fieldset) ── */
+.reg-subsection {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+/* ── Clear link ── */
+.reg-clear-link {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.12s;
+}
+
+.reg-clear-link:hover {
+  color: #475569;
+}
+
+/* ── Form-level error ── */
+.reg-form-error {
+  font-size: 12.5px;
+  color: #ef4444;
+  font-weight: 500;
+  margin: 0;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+}
+
+/* ================================================================
+   BUTTONS
+   ================================================================ */
+
+.reg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+  white-space: nowrap;
+}
+
+.reg-btn:active {
+  transform: scale(0.97);
+}
+.reg-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reg-btn--primary {
+  background: #1d6fd8;
+  color: #fff;
+}
+.reg-btn--primary:hover:not(:disabled) {
+  background: #1a62c4;
+}
+
+.reg-btn--save {
+  background: #0a1628;
+  color: #fff;
+  padding: 12px 28px;
+  font-size: 15px;
+  border-radius: 10px;
+}
+.reg-btn--save:hover {
+  background: #12213d;
+}
+
+/* ================================================================
+   PENDING TEETH INDICATOR
+   ================================================================ */
+
+.reg-teeth-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.reg-teeth-indicator__count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.reg-teeth-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.reg-tooth-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px 3px 8px;
+  background: #1d6fd8;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.reg-tooth-tag:hover {
+  background: #1a62c4;
+}
+
+.reg-tooth-tag span {
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.reg-teeth-clear {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 2px 4px;
+  transition: color 0.12s;
+}
+.reg-teeth-clear:hover {
+  color: #ef4444;
+}
+
+/* ================================================================
+   ADDITIONAL OPTIONS
+   ================================================================ */
+
+.reg-additional {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reg-additional__item {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.reg-additional__sub {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ================================================================
+   TOOTH PICKER (treatment tooth selector)
+   ================================================================ */
+
+.tooth-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tooth-picker__label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  margin: 0;
+}
+
+.tooth-picker__quadrants {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.tooth-picker__quadrant {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tooth-picker__q-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tooth-picker__teeth {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tooth-picker__btn {
+  width: 30px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1.5px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.tooth-picker__btn:hover {
+  border-color: #1d6fd8;
+  color: #1d6fd8;
+  background: #eff6ff;
+}
+
+.tooth-picker__btn--active {
+  background: #1d6fd8;
+  border-color: #1d6fd8;
+  color: #fff;
+}
+
+.tooth-picker__selected {
+  font-size: 12px;
+  color: #1d6fd8;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ================================================================
+   SUMMARY TABLE
+   ================================================================ */
+
+/* Legend */
+.sum-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+}
+
+.sum-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.sum-legend__item::before {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.sum-legend__item--caries {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.sum-legend__item--caries::before {
+  background: #3b82f6;
+}
+
+.sum-legend__item--extraction {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+.sum-legend__item--extraction::before {
+  background: #ef4444;
+}
+
+.sum-legend__item--remaining_root {
+  background: #fff7ed;
+  color: #c2410c;
+}
+.sum-legend__item--remaining_root::before {
+  background: #f97316;
+}
+
+.sum-legend__item--treatment {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+.sum-legend__item--treatment::before {
+  background: #8b5cf6;
+}
+
+/* Empty state */
+.sum-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 36px 24px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13.5px;
+}
+
+.sum-empty p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Table scroll wrapper */
+.sum-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Table */
+.sum-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 580px;
+}
+
+.sum-table__head {
+  background: #f8fafc;
+}
+
+.sum-table__th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sum-table__row {
+  border-bottom: 1px solid #e2e8f0;
+  transition: background 0.12s;
+}
+
+.sum-table__row:last-child {
+  border-bottom: none;
+}
+.sum-table__row:hover {
+  background: #fafbfc;
+}
+
+/* Color coding via left-border on first data cell */
+.sum-table__row--caries td:first-child {
+  border-left: 3px solid #3b82f6;
+}
+.sum-table__row--extraction td:first-child {
+  border-left: 3px solid #ef4444;
+}
+.sum-table__row--remaining_root td:first-child {
+  border-left: 3px solid #f97316;
+}
+.sum-table__row--treatment td:first-child {
+  border-left: 3px solid #8b5cf6;
+}
+
+.sum-table__cell {
+  padding: 10px 14px;
+  color: #374151;
+  vertical-align: middle;
+}
+
+.sum-table__cell--num {
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 11px;
+  width: 32px;
+}
+
+.sum-table__cell--actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.sum-table__dash {
+  color: #cbd5e1;
+}
+
+/* Diagnosis / treatment badges in table */
+.sum-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sum-badge--caries {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.sum-badge--extraction {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+.sum-badge--remaining_root {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+.sum-badge--treatment {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+}
+
+/* Action buttons */
+.sum-action {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.sum-action--edit {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+}
+.sum-action--edit:hover {
+  border-color: #1d6fd8;
+  color: #1d6fd8;
+  background: #eff6ff;
+}
+
+.sum-action--delete {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #ef4444;
+}
+.sum-action--delete:hover {
+  border-color: #ef4444;
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Additional options preview in summary */
+.sum-additional {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 8px;
+}
+
+.sum-additional__title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #6d28d9;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 10px;
+}
+
+.sum-additional__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sum-additional__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sum-additional__detail {
+  font-size: 12px;
+  color: #6d28d9;
+  background: rgba(139, 92, 246, 0.12);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-weight: 500;
+}
+
+/* ================================================================
+   PAGE FOOTER (save button)
+   ================================================================ */
+
+.reg-page__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 24px 0 8px;
+}
+
+.reg-page__footer-warn {
+  font-size: 13px;
+  color: #f97316;
+  font-weight: 500;
+  margin: 0;
+  text-align: right;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+
+@media (max-width: 900px) {
+  .reg-row--3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .reg-page {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .reg-page__header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .reg-page__header-actions {
+    width: 100%;
+  }
+  .reg-page__save-btn {
+    width: 100%;
+  }
+
+  .reg-page__title {
+    font-size: 19px;
+  }
+  .reg-page__subtitle {
+    font-size: 13px;
+  }
+
+  .reg-row--2,
+  .reg-row--3 {
+    grid-template-columns: 1fr;
+  }
+
+  .reg-section__header {
+    padding: 14px 16px;
+  }
+  .reg-section__body {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .tooth-picker__quadrants {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sum-table__th,
+  .sum-table__cell {
+    padding: 8px 10px;
+  }
+
+  .sum-table__cell--actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .reg-page__footer {
+    align-items: stretch;
+  }
+
+  .reg-btn--save {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .reg-section__actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .reg-btn--primary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .reg-page {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .reg-page__title {
+    font-size: 17px;
+  }
+
+  .reg-section__body {
+    padding: 14px 12px;
+  }
+
+  .tooth-picker__quadrants {
+    grid-template-columns: 1fr;
+  }
+
+  .tooth-picker__btn {
+    width: 28px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  .reg-additional__sub {
+    gap: 6px;
+  }
+
+  .sum-legend {
+    gap: 6px 10px;
+  }
+
+  .reg-radio-group {
+    gap: 6px 14px;
+  }
+
+  .reg-teeth-tags {
+    gap: 4px;
+  }
+
+  .reg-tooth-tag {
+    font-size: 11px;
+    padding: 2px 8px 2px 6px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .dashboard-main {
+    margin-left: 0;
+  }
+}

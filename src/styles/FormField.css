@@ -1,0 +1,45 @@
+/* ── FormField ────────────────────────────────────────────────────── */
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Uppercase tiny label */
+.form-field__label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+
+/* Required asterisk */
+.form-field__required {
+  color: var(--color-danger);
+  margin-left: 2px;
+}
+
+/* Optional hint below label */
+.form-field__hint {
+  font-size: 10px;
+  color: var(--color-gray-400);
+  margin-top: -2px;
+}
+
+/* Inline error row */
+.form-field__error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-danger);
+  animation: fadeUp 0.20s ease-out;
+}
+
+.form-field__error-icon {
+  flex-shrink: 0;
+  color: var(--color-danger);
+}

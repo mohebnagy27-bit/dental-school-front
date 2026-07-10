@@ -1,0 +1,583 @@
+/* ================================================================
+   StudentProfilePage.css
+   ================================================================ */
+
+/* ── Page wrapper ── */
+.sp {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ================================================================
+   PROFILE HEADER
+   ================================================================ */
+
+.sp-profile-header {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  box-shadow: 0 1px 4px rgba(10, 22, 40, 0.06);
+}
+
+.sp-profile-header__left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Avatar ── */
+.sp-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1D6FD8 0%, #0A1628 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(29, 111, 216, 0.3);
+}
+
+/* ── Name + meta ── */
+.sp-profile-header__info {
+  min-width: 0;
+}
+
+.sp-profile-header__name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0A1628;
+  margin: 0 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sp-profile-header__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.sp-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.sp-meta-dot {
+  color: #CBD5E1;
+  font-size: 13px;
+}
+
+/* ================================================================
+   STAT CARDS ROW
+   ================================================================ */
+
+.sp-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.sp-stat-card {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 4px rgba(10, 22, 40, 0.06);
+  transition: box-shadow 0.18s ease;
+}
+
+.sp-stat-card:hover {
+  box-shadow: 0 4px 14px rgba(10, 22, 40, 0.1);
+}
+
+.sp-stat-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sp-stat-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sp-stat-card__value {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.sp-stat-card__label {
+  font-size: 13px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+/* ================================================================
+   SECTION CARD
+   ================================================================ */
+
+.sp-section {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(10, 22, 40, 0.06);
+  overflow: hidden;
+}
+
+.sp-section__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 22px;
+  border-bottom: 1px solid #E2E8F0;
+  background: #F8FAFC;
+}
+
+.sp-section__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0A1628;
+  margin: 0;
+}
+
+.sp-section__badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 20px;
+  border: 1px solid;
+}
+
+.sp-section__badge--reserved { background: #FFFBEB; color: #92400E; border-color: #FDE68A; }
+.sp-section__badge--completed { background: #F0FDF4; color: #166534; border-color: #BBF7D0; }
+
+.sp-section__body {
+  padding: 22px;
+}
+
+.sp-section__body--no-pad {
+  padding: 0;
+}
+
+/* ================================================================
+   PERSONAL INFO GRID
+   ================================================================ */
+
+.sp-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px 24px;
+  margin: 0;
+}
+
+.sp-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-info-item dt {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sp-info-item dd {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1E293B;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sp-id-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-family: 'Inter', monospace;
+}
+
+.sp-email-link {
+  color: #1D6FD8;
+  text-decoration: none;
+  font-weight: 500;
+}
+.sp-email-link:hover { text-decoration: underline; }
+
+/* ================================================================
+   TABLE
+   ================================================================ */
+
+.sp-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 480px;
+}
+
+.sp-table__th {
+  padding: 10px 18px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+  white-space: nowrap;
+}
+
+.sp-table__row {
+  border-bottom: 1px solid #F1F5F9;
+  transition: background 0.12s;
+}
+
+.sp-table__row:last-child { border-bottom: none; }
+.sp-table__row:hover { background: #FAFBFC; }
+
+.sp-table__td {
+  padding: 12px 18px;
+  color: #374151;
+  vertical-align: middle;
+  line-height: 1.5;
+}
+
+.sp-table-empty {
+  text-align: center;
+  color: #94A3B8;
+  font-size: 13.5px;
+  padding: 28px 24px;
+  margin: 0;
+}
+
+/* Tooth chip in table */
+.sp-tooth-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ================================================================
+   BUTTONS
+   ================================================================ */
+
+.sp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.sp-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sp-btn--primary {
+  background: #1D6FD8;
+  color: #fff;
+  border: 1.5px solid #1D6FD8;
+}
+.sp-btn--primary:hover:not(:disabled) { background: #1A62C4; border-color: #1A62C4; }
+
+.sp-btn--ghost {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1.5px solid #E2E8F0;
+}
+.sp-btn--ghost:hover { background: #E2E8F0; }
+
+.sp-btn--outline {
+  background: #fff;
+  color: #1D6FD8;
+  border: 1.5px solid #BFDBFE;
+}
+.sp-btn--outline:hover { background: #EFF6FF; }
+
+/* ================================================================
+   EDIT PROFILE DIALOG
+   ================================================================ */
+
+.sp-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 22, 40, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  backdrop-filter: blur(3px);
+  animation: sp-fade 0.16s ease;
+}
+
+@keyframes sp-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.sp-dialog {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgba(10, 22, 40, 0.2), 0 4px 12px rgba(10, 22, 40, 0.08);
+  width: 100%;
+  max-width: 480px;
+  animation: sp-slide 0.2s ease;
+  overflow: hidden;
+}
+
+@keyframes sp-slide {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.sp-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 0;
+}
+
+.sp-dialog__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0A1628;
+  margin: 0;
+}
+
+.sp-dialog__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.sp-dialog__close:hover { background: #E2E8F0; color: #0A1628; }
+
+.sp-dialog__body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sp-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid #E2E8F0;
+}
+
+/* ── Form field in dialog ── */
+.sp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sp-field__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.sp-field__label span { color: #EF4444; }
+
+.sp-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1E293B;
+  background: #fff;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.sp-input:focus {
+  outline: none;
+  border-color: #1D6FD8;
+  box-shadow: 0 0 0 3px rgba(29, 111, 216, 0.12);
+}
+
+/* ================================================================
+   TOAST
+   ================================================================ */
+
+.sp-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 12px 14px;
+  border-radius: 10px;
+  background: #F0FDF4;
+  border: 1px solid #A7F3D0;
+  color: #065F46;
+  box-shadow: 0 8px 24px rgba(10, 22, 40, 0.12);
+  font-size: 13.5px;
+  font-weight: 600;
+  max-width: 340px;
+  animation: sp-toast-in 0.25s ease;
+}
+
+@keyframes sp-toast-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.sp-toast__icon { display: flex; align-items: center; flex-shrink: 0; }
+.sp-toast__msg  { flex: 1; line-height: 1.4; }
+
+.sp-toast__close {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 0 0 4px;
+  flex-shrink: 0;
+  transition: opacity 0.12s;
+}
+.sp-toast__close:hover { opacity: 1; }
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+
+@media (max-width: 1024px) {
+  .sp-info-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .sp { padding: 16px; gap: 16px; }
+
+  .sp-profile-header { padding: 20px; gap: 16px; }
+
+  .sp-profile-header__name { font-size: 18px; }
+
+  .sp-stats-row { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+  .sp-stat-card { padding: 14px 16px; gap: 12px; flex-direction: column; align-items: flex-start; }
+
+  .sp-stat-card__icon { width: 40px; height: 40px; }
+  .sp-stat-card__value { font-size: 24px; }
+
+  .sp-info-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+  .sp-section__header { padding: 14px 16px; }
+  .sp-section__body   { padding: 16px; }
+
+  .sp-table__th,
+  .sp-table__td { padding: 10px 14px; }
+}
+
+@media (max-width: 580px) {
+  .sp-stats-row { grid-template-columns: 1fr; }
+
+  .sp-stat-card { flex-direction: row; align-items: center; padding: 16px 18px; gap: 14px; }
+  .sp-stat-card__icon { width: 44px; height: 44px; }
+
+  .sp-profile-header { flex-direction: column; align-items: flex-start; }
+
+  .sp-btn--outline { width: 100%; justify-content: center; }
+
+  .sp-info-grid { grid-template-columns: 1fr; }
+
+  .sp-dialog { border-radius: 12px 12px 0 0; }
+  .sp-dialog-overlay { align-items: flex-end; padding: 0; }
+  .sp-dialog__footer { flex-direction: column-reverse; }
+  .sp-btn { width: 100%; justify-content: center; }
+
+  .sp-toast {
+    top: auto;
+    bottom: 16px;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .sp-profile-header__meta { gap: 3px 6px; }
+  .sp-meta-dot { display: none; }
+  .sp-meta-item { font-size: 12px; }
+}

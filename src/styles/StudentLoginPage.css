@@ -1,0 +1,25 @@
+/* ── StudentLoginPage ─────────────────────────────────────────────── */
+
+.student-login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.student-login__form.form-shaking {
+  animation: shake 0.35s ease-in-out;
+}
+
+/* Hint below the Student ID input */
+.student-login__hint {
+  font-size: 10px;
+  color: var(--color-gray-400);
+  margin-top: 2px;
+  font-family: var(--font-mono);
+}
+
+/* Back-to-home row */
+.student-login__footer {
+  margin-top: 16px;
+  text-align: center;
+}

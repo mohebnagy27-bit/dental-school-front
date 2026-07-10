@@ -1,0 +1,36 @@
+/* ═══════════════════════════════════════════════════
+   PATIENTS PAGE
+   Page shell, header, and toolbar layout come from
+   ../styles/shared-layout.css. This file only contains
+   page-specific tweaks.
+   ═══════════════════════════════════════════════════ */
+
+/* Ensure the table never forces horizontal page scroll;
+   RecentTable already handles internal scroll. */
+.page-shell__content > .recent-table {
+  width: 100%;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 767px) {
+  .page-header__actions .btn {
+    width: 100%;
+  }
+
+  .page-header__actions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 479px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 1023px) {
+  .page-shell__main {
+    margin-left: 0;
+  }
+}

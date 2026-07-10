@@ -1,0 +1,209 @@
+/* ── LandingPage ──────────────────────────────────────────────────── */
+
+/* Root split container */
+.landing {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── LEFT panel (white) ────────────────────────────────────────────── */
+.landing__left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  overflow: auto;
+}
+
+.landing__logo-area {
+  padding: 40px 56px 0;
+}
+
+/* Vertically centred hero */
+.landing__content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 40px 56px;
+}
+
+.landing__inner {
+  max-width: 420px;
+  width: 100%;
+}
+
+/* Headline */
+.landing__headline {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-navy);
+  line-height: 1.25;
+  margin-bottom: 16px;
+}
+
+.landing__headline-accent {
+  color: var(--color-blue);
+}
+
+/* Description */
+.landing__description {
+  font-size: 14px;
+  color: var(--color-gray-600);
+  line-height: 1.65;
+  margin-bottom: 32px;
+  max-width: 340px;
+}
+
+/* Button column */
+.landing__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 280px;
+}
+
+/* Shared portal button base */
+.landing__btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 11px 20px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  border: none;
+  font-family: var(--font-sans);
+}
+
+.landing__btn:active { transform: scale(0.98); }
+
+/* Primary — solid blue */
+.landing__btn--primary {
+  background-color: var(--color-blue);
+  color: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.landing__btn--primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+/* Secondary — outlined */
+.landing__btn--secondary {
+  background-color: #fff;
+  color: var(--color-blue);
+  border: 1px solid var(--color-blue) !important;
+}
+
+.landing__btn--secondary:hover {
+  background-color: var(--color-light-blue);
+}
+
+/* Button inner left slot */
+.landing__btn-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* "or" horizontal rule */
+.landing__divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0;
+}
+
+.landing__divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-gray-200);
+}
+
+.landing__divider-text {
+  font-size: 11px;
+  color: var(--color-gray-400);
+}
+
+/* Footer */
+.landing__footer {
+  padding: 0 56px 32px;
+  font-size: 11px;
+  color: var(--color-gray-400);
+}
+
+/* ── RIGHT panel (navy) ────────────────────────────────────────────── */
+.landing__right {
+  width: 340px;
+  flex-shrink: 0;
+  background-color: var(--color-navy);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Decorative concentric rings */
+.landing__ring {
+  position: absolute;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.landing__ring--xl  { width: 288px; height: 288px; border: 1px solid rgba(29,111,216,0.10); }
+.landing__ring--lg  { width: 200px; height: 200px; border: 1px solid rgba(29,111,216,0.18); }
+.landing__ring--md  { width: 120px; height: 120px; border: 1px solid rgba(59,152,242,0.25); }
+.landing__ring--sm  { width: 56px;  height: 56px;  background: rgba(29,111,216,0.12); }
+
+/* Welcome text block */
+.landing__welcome {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  animation: fadeUp 0.30s ease-out;
+}
+
+.landing__welcome-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.landing__welcome-sub {
+  color: rgba(255, 255, 255, 0.40);
+  font-size: 11px;
+}
+
+/* Subtle gradient overlay */
+.landing__glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(29, 111, 216, 0.05) 0%,
+    transparent 50%,
+    rgba(59, 152, 242, 0.05) 100%
+  );
+  pointer-events: none;
+}
+
+/* ── Responsive — hide right panel on small screens ──────────────── */
+@media (max-width: 768px) {
+  .landing__right      { display: none; }
+  .landing__logo-area  { padding: 28px 24px 0; }
+  .landing__content    { padding: 24px; }
+  .landing__footer     { padding: 0 24px 24px; }
+  .landing__headline   { font-size: 22px; }
+  .landing__buttons    { width: 100%; }
+}

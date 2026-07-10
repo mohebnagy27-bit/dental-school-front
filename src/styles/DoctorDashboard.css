@@ -1,0 +1,240 @@
+.doctor-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-surface, #f8fafc);
+  overflow-x: hidden; /* NEVER allow horizontal scrolling */
+}
+
+.doctor-dashboard__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* overflow: hidden; */
+  margin-left: 260px;
+}
+
+.doctor-dashboard__content {
+  flex: 1;
+  /* padding: 28px 32px; */
+  padding: 24px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  /* overflow-y: auto; */
+  overflow-x: hidden;
+}
+
+/* Welcome banner */
+.doctor-dashboard__welcome {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.doctor-dashboard__welcome-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--color-navy, #1e3a5f);
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.doctor-dashboard__welcome-sub {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #64748b);
+  margin: 0;
+}
+
+.doctor-dashboard__date {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #64748b);
+  background: var(--color-white, #ffffff);
+  border: 1.5px solid var(--color-border, #e2e8f0);
+  border-radius: 8px;
+  padding: 6px 14px;
+  white-space: nowrap;
+  align-self: center;
+}
+
+/* Stats grid */
+.doctor-dashboard__stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+/* Bottom grid: table + activity side by side */
+.doctor-dashboard__grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+.dd-search-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.doctor-dashboard__table-col,
+.doctor-dashboard__activity-col {
+  min-width: 0;
+}
+
+/* Activity feed */
+.activity-feed {
+  background: var(--color-white, #ffffff);
+  border-radius: 14px;
+  border: 1.5px solid var(--color-border, #e2e8f0);
+  overflow: hidden;
+}
+
+.activity-feed__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-navy, #1e3a5f);
+  padding: 18px 22px 14px;
+  border-bottom: 1.5px solid var(--color-border, #e2e8f0);
+  margin: 0;
+}
+
+.activity-feed__list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.activity__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 20px;
+  transition: background 0.12s;
+}
+
+.activity__item:hover {
+  background: var(--color-surface, #f8fafc);
+}
+
+.activity__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.activity__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.activity__text {
+  font-size: 0.8rem;
+  color: var(--color-text, #1e293b);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.activity__time {
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #94a3b8);
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 1280px) {
+  .doctor-dashboard__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* @media (max-width: 1060px) {
+  .doctor-dashboard__grid {
+    grid-template-columns: 1fr;
+  }
+} */
+
+@media (max-width: 1023px) {
+  /* Sidebar is hidden — main takes full width */
+  .doctor-dashboard__main {
+    margin-left: 0;
+  }
+}
+
+/* @media (max-width: 860px) {
+  .doctor-dashboard__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .doctor-dashboard__content {
+    padding: 20px 18px;
+  }
+} */
+
+@media (max-width: 900px) {
+  .doctor-dashboard__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* @media (max-width: 600px) {
+  .doctor-dashboard {
+    flex-direction: column;
+  }
+  .doctor-dashboard__stats {
+    grid-template-columns: 1fr 1fr;
+  }
+} */
+
+@media (max-width: 767px) {
+  .doctor-dashboard__content {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .doctor-dashboard__welcome {
+    padding: 20px 16px;
+  }
+
+  .doctor-dashboard__welcome-title {
+    font-size: 1.125rem;
+  }
+
+  .dd-search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* .dd-filter-pills {
+    justify-content: flex-start;
+  } */
+}
+
+@media (max-width: 639px) {
+  .doctor-dashboard__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .doctor-dashboard__content {
+    padding: 12px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 399px) {
+  .doctor-dashboard__grid {
+    grid-template-columns: 1fr;
+  }
+}

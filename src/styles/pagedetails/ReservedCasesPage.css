@@ -1,0 +1,18 @@
+/* ═══════════════════════════════════════════════════
+   RESERVED CASES PAGE
+   Page shell, header, and toolbar layout come from
+   ../styles/shared-layout.css. This file only contains
+   page-specific tweaks.
+   ═══════════════════════════════════════════════════ */
+
+.page-shell__content > .recent-table {
+  width: 100%;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 479px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

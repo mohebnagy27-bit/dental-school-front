@@ -1,0 +1,336 @@
+/* ═══════════════════════════════════════════════════
+   SHARED PAGE SHELL
+   Reused by all dashboard-style pages so layout,
+   spacing, and responsive behavior stay consistent
+   with DoctorDashboard / StudentDashboard.
+   ═══════════════════════════════════════════════════ */
+
+.page-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-surface, #f8fafc);
+  overflow-x: hidden;
+}
+
+.page-shell__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  margin-left: 260px;
+}
+
+.page-shell__content {
+  flex: 1;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* ── Page header (title + subtitle + action area) ─ */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-header__title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--color-navy, #1e3a5f);
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.page-header__sub {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #64748b);
+  margin: 0;
+}
+
+.page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Generic primary / secondary buttons ─────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+  white-space: nowrap;
+  min-height: 40px;
+  box-sizing: border-box;
+}
+
+.btn--primary {
+  background: var(--color-blue, #2563eb);
+  color: #ffffff;
+}
+
+.btn--primary:hover {
+  background: #1d4ed8;
+}
+
+.btn--secondary {
+  background: var(--color-white, #ffffff);
+  border-color: var(--color-border, #e2e8f0);
+  color: var(--color-navy, #1e3a5f);
+}
+
+.btn--secondary:hover {
+  border-color: var(--color-blue, #2563eb);
+  color: var(--color-blue, #2563eb);
+}
+
+.btn--danger {
+  background: var(--color-white, #ffffff);
+  border-color: var(--color-border, #e2e8f0);
+  color: #e11d48;
+}
+
+.btn--danger:hover {
+  border-color: #e11d48;
+  background: rgba(225, 29, 72, 0.06);
+}
+
+/* ── Toolbar row: search + filters ───────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toolbar__search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 380px;
+}
+
+.toolbar__filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Section card (generic content container) ───── */
+.section-card {
+  background: var(--color-white, #ffffff);
+  border-radius: 14px;
+  border: 1.5px solid var(--color-border, #e2e8f0);
+  padding: 20px 22px;
+  box-sizing: border-box;
+}
+
+.section-card__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-navy, #1e3a5f);
+  margin: 0 0 14px;
+}
+
+/* ── Table action icon buttons ───────────────────── */
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-actions__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-border, #e2e8f0);
+  background: var(--color-white, #ffffff);
+  color: var(--color-text-muted, #64748b);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+  flex-shrink: 0;
+}
+
+.table-actions__btn:hover {
+  border-color: var(--color-blue, #2563eb);
+  color: var(--color-blue, #2563eb);
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.table-actions__btn--danger:hover {
+  border-color: #e11d48;
+  color: #e11d48;
+  background: rgba(225, 29, 72, 0.06);
+}
+
+.table-actions__btn--success:hover {
+  border-color: #16a34a;
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.06);
+}
+
+/* ── Generic stat grid (3-up) ─────────────────────── */
+.stat-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* ── Generic stat grid (5-up) ─────────────────────── */
+.stat-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+/* ── Loading skeleton row (used in tables) ───────── */
+.skeleton-bar {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--color-border, #e2e8f0) 25%,
+    #f1f5f9 50%,
+    var(--color-border, #e2e8f0) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ════════════════════════════════════════════════ */
+
+/* Large desktop (1920px+) */
+@media (min-width: 1920px) {
+  .page-shell__content {
+    padding: 32px 48px;
+    gap: 28px;
+  }
+}
+
+/* Laptop (1280px) */
+@media (max-width: 1280px) {
+  .stat-grid-5 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Small laptop / tablet landscape (≤ 1120px) */
+@media (max-width: 1120px) {
+  .stat-grid-5 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Tablet (< 1024px) — sidebar becomes drawer */
+@media (max-width: 1023px) {
+  .page-shell__content {
+    padding: 22px 24px;
+    gap: 20px;
+  }
+
+  .stat-grid-3 {
+    gap: 12px;
+  }
+
+  .stat-grid-5 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Tablet portrait (768px) — two cards per row */
+@media (max-width: 767px) {
+  .page-shell__content {
+    padding: 18px 16px;
+    gap: 16px;
+  }
+
+  .page-header__title {
+    font-size: 1.1rem;
+  }
+
+  .stat-grid-3,
+  .stat-grid-5 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .toolbar__search {
+    max-width: none;
+    min-width: 100%;
+    order: -1;
+  }
+
+  .toolbar__filters {
+    width: 100%;
+  }
+}
+
+/* Mobile (480px) — one card per row */
+@media (max-width: 479px) {
+  .page-shell__content {
+    padding: 14px 12px;
+    gap: 14px;
+  }
+
+  .page-header__title {
+    font-size: 1rem;
+  }
+
+  .page-header__sub {
+    font-size: 0.8rem;
+  }
+
+  .stat-grid-3,
+  .stat-grid-5 {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .btn {
+    padding: 9px 14px;
+    font-size: 0.8rem;
+  }
+
+  .section-card {
+    padding: 16px 14px;
+  }
+}

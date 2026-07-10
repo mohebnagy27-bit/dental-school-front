@@ -1,0 +1,40 @@
+/* ── DoctorLoginPage ──────────────────────────────────────────────── */
+
+/* Form container — receives .form-shaking to trigger the shake animation */
+.doctor-login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.doctor-login__form.form-shaking {
+  animation: shake 0.35s ease-in-out;
+}
+
+/* "Keep me signed in" row */
+.doctor-login__remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.doctor-login__checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--color-blue);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.doctor-login__remember-label {
+  font-size: 11px;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Forgot password footer link */
+.doctor-login__footer {
+  margin-top: 16px;
+  text-align: center;
+}

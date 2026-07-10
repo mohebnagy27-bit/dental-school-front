@@ -1,0 +1,33 @@
+/* ── LogoBrand ────────────────────────────────────────────────────── */
+
+.logo-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  text-decoration: none;
+}
+
+/* Icon square */
+.logo-brand__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-navy);
+  color: #fff;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.logo-brand__icon--sm { width: 24px; height: 24px; }
+.logo-brand__icon--md { width: 32px; height: 32px; }
+
+/* Wordmark */
+.logo-brand__wordmark {
+  font-weight: 600;
+  color: var(--color-gray-800);
+  line-height: 1;
+}
+
+.logo-brand__wordmark--sm { font-size: 13px; }
+.logo-brand__wordmark--md { font-size: 18px; }

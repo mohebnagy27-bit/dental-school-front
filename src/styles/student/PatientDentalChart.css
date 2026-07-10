@@ -1,0 +1,300 @@
+/* ================================================================
+   PatientDentalChart.css
+   Visually matches DentalChart.css — prefix: pdc-
+   ================================================================ */
+
+/* ── Wrapper ── */
+.pdc { width: 100%; position: relative; }
+
+/* ── Legend ── */
+.pdc__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: #F1F5F9;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+}
+
+.pdc__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.pdc__legend-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.pdc__legend-dot--healthy {
+  background: #EEF2F7;
+  border: 1.5px solid #C1CAD8;
+}
+
+/* ── Scroll wrapper ── */
+.pdc__scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.pdc__inner {
+  min-width: 620px;
+  padding: 8px 20px 4px;
+}
+
+/* ── Quadrant labels ── */
+.pdc__qlabels {
+  display: flex;
+  justify-content: space-around;
+  padding: 0 44px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pdc__qlabels--top    { margin-bottom: 6px; }
+.pdc__qlabels--bottom { margin-top: 6px; }
+
+/* ── Arch rows ── */
+.pdc__arch {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+}
+
+.pdc__arch--upper { align-items: flex-end; }
+.pdc__arch--lower { align-items: flex-start; }
+
+/* ── Midline gap ── */
+.pdc__midline-gap {
+  width: 10px;
+  border-left: 2px dashed #CBD5E1;
+  align-self: stretch;
+  flex-shrink: 0;
+  margin: 0 1px;
+}
+
+/* ── Occlusal line ── */
+.pdc__occlusal {
+  height: 3px;
+  margin: 0 16px;
+  background: linear-gradient(to right, #CBD5E1, #94A3B8 50%, #CBD5E1);
+  border-radius: 2px;
+}
+
+/* ── Hint ── */
+.pdc__hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #64748B;
+  text-align: center;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* ================================================================
+   TOOTH ELEMENT
+   Two variants: healthy (div) and has-case (button)
+   ================================================================ */
+
+.pdc-tooth {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 1px;
+  gap: 0;
+  border-radius: 3px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+}
+
+/* Healthy tooth — static, no interaction */
+.pdc-tooth--healthy {
+  cursor: default;
+}
+
+/* Case tooth — interactive */
+.pdc-tooth--has-case {
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.pdc-tooth--has-case:hover {
+  transform: scaleY(1.07);
+  z-index: 1;
+  filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
+}
+
+.pdc-tooth--has-case:focus-visible {
+  outline: 2px solid #1D6FD8;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* ── Tooth number label (identical to DentalChart) ── */
+.pdc-tooth__label {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  color: #94A3B8;
+  line-height: 1;
+  margin: 2px 0;
+  font-family: 'Inter', 'Arial', sans-serif;
+  letter-spacing: 0;
+  text-align: center;
+  min-width: 14px;
+}
+
+.pdc-tooth--has-case .pdc-tooth__label { color: #475569; }
+
+/* ── Crown (identical to DentalChart) ── */
+.pdc-tooth__crown {
+  background: #EEF2F7;
+  border: 1.5px solid #C1CAD8;
+  box-sizing: border-box;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.pdc-tooth__crown--upper {
+  border-radius: 3px 3px 0 0;
+  border-bottom: none;
+}
+
+.pdc-tooth__crown--lower {
+  border-radius: 0 0 3px 3px;
+  border-top: none;
+}
+
+/* Hover on healthy crown */
+.pdc-tooth--healthy:hover .pdc-tooth__crown:not([style*="background"]) {
+  /* No hover on healthy teeth */
+}
+
+/* Hover effect on case tooth (brightens the colored crown slightly) */
+.pdc-tooth--has-case:hover .pdc-tooth__crown[style*="background"] {
+  filter: brightness(1.1);
+}
+
+/* ── Roots container (identical to DentalChart) ── */
+.pdc-tooth__roots {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+
+.pdc-tooth__roots--upper { align-items: flex-end; }
+.pdc-tooth__roots--lower { align-items: flex-start; }
+
+/* ── Individual root (identical to DentalChart) ── */
+.pdc-tooth__root {
+  width: 5px;
+  background: #D1DAE8;
+  border: 1px solid #C1CAD8;
+  box-sizing: border-box;
+  transition: background 0.18s ease;
+}
+
+.pdc-tooth__root--upper {
+  border-radius: 4px 4px 0 0;
+  border-bottom: none;
+}
+
+.pdc-tooth__root--lower {
+  border-radius: 0 0 4px 4px;
+  border-top: none;
+}
+
+/* Canine wider root */
+.pdc-tooth--canine .pdc-tooth__root { width: 6px; }
+
+/* ================================================================
+   TOOLTIP
+   Fixed-positioned so it's never clipped by overflow
+   ================================================================ */
+
+.pdc-tooltip {
+  position: fixed;
+  transform: translate(-50%, calc(-100% - 10px));
+  background: #0A1628;
+  color: #fff;
+  border-radius: 8px;
+  padding: 9px 13px;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(10, 22, 40, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  animation: pdc-tooltip-in 0.12s ease;
+}
+
+@keyframes pdc-tooltip-in {
+  from { opacity: 0; transform: translate(-50%, calc(-100% - 4px)); }
+  to   { opacity: 1; transform: translate(-50%, calc(-100% - 10px)); }
+}
+
+/* Caret */
+.pdc-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: #0A1628;
+}
+
+.pdc-tooltip__tooth {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.pdc-tooltip__diag {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.pdc-tooltip__status {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.pdc-tooltip__status--available  { background: #ECFDF5; color: #065F46; }
+.pdc-tooltip__status--reserved   { background: #FFFBEB; color: #92400E; }
+.pdc-tooltip__status--completed  { background: #F0FDF4; color: #166534; }
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+
+@media (max-width: 500px) {
+  .pdc__inner { min-width: 580px; }
+
+  .pdc-tooth__label { font-size: 7.5px; }
+
+  .pdc-tooth__crown {
+    transform: scaleX(0.9);
+    transform-origin: center;
+  }
+}

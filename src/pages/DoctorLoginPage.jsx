@@ -5,7 +5,7 @@ import { AlertCircle } from 'lucide-react'
 import { AuthCard }      from '../components/auth/AuthCard'
 import { FormField }     from '../components/auth/FormField'
 import { PasswordInput } from '../components/auth/PasswordInput'
-import { staffLogin } from '../services/authService'
+import { useDoctorLogin } from '../hooks/useAuthMutations'
 import '../styles/DoctorLoginPage.css'
 
 /**
@@ -31,8 +31,8 @@ export default function DoctorLoginPage() {
   const [passwordError, setPasswordError] = useState('')
   const [apiError,      setApiError]      = useState('')
 
-  /* ── Async state ───────────────────────────────────────────────── */
-  const [isLoading, setIsLoading] = useState(false)
+  const doctorLoginMutation = useDoctorLogin()
+  const isLoading = doctorLoginMutation.isPending
 
   /* ── Helpers ───────────────────────────────────────────────────── */
 
@@ -80,19 +80,12 @@ export default function DoctorLoginPage() {
       return
     }
 
-    setIsLoading(true)
     setApiError('')
 
     try {
-
-      const data = await staffLogin({ identifier: username, password });
+      const data = await doctorLoginMutation.mutateAsync({ identifier: username, password });
  
       // Backend returns: { message, token, user: { id, name, email, role } }
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('role', data.user.role);
-      localStorage.setItem('userId', data.user.id);
-      localStorage.setItem('userName', data.user.name);
- 
       if (data.user.role === 'SUPER_ADMIN') {
       navigate('/admin/dashboard');
       } else if (data.user.role === 'DOCTOR') {
@@ -101,8 +94,6 @@ export default function DoctorLoginPage() {
     } catch (error) {
       setApiError(error.response?.data?.message || 'An unexpected error occurred. Please try again.')
       triggerShake()
-    } finally {
-      setIsLoading(false)
     }
   }
 

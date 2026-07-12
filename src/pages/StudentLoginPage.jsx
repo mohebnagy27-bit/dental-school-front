@@ -6,7 +6,7 @@ import { AuthCard }    from '../components/auth/AuthCard'
 import { FormField }   from '../components/auth/FormField'
 import '../styles/StudentLoginPage.css'
 
-import { checkStudentStatus } from '../services/authService'
+import { useStudentStatus } from '../hooks/useAuthMutations'
 
 /* sessionStorage key shared across the student auth flow */
 const SESSION_KEY = 'df_student_id'
@@ -31,7 +31,8 @@ export default function StudentLoginPage() {
   const [studentId,      setStudentId]      = useState('')
   const [fieldError,     setFieldError]     = useState('')
   const [apiError,       setApiError]       = useState('')
-  const [isLoading,      setIsLoading]      = useState(false)
+  const studentStatusMutation = useStudentStatus()
+  const isLoading = studentStatusMutation.isPending
 
   /* ── Helpers ─────────────────────────────────────────────────────── */
   const triggerShake = () => {
@@ -64,11 +65,10 @@ export default function StudentLoginPage() {
     e.preventDefault()
     if (!validate()) { triggerShake(); return }
 
-    setIsLoading(true)
     setApiError('')
 
     try {
-    const data = await checkStudentStatus(studentId);
+    const data = await studentStatusMutation.mutateAsync(studentId);
 
     sessionStorage.setItem(SESSION_KEY, studentId)
 
@@ -93,8 +93,6 @@ export default function StudentLoginPage() {
     } catch (error) {
       setApiError(error.response?.data?.message || 'Network error. Please check your connection and try again.')
       triggerShake()
-    } finally {
-      setIsLoading(false)
     }
   }
 

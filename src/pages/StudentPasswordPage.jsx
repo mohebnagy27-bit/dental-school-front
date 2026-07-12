@@ -7,7 +7,7 @@ import { FormField }     from '../components/auth/FormField'
 import { PasswordInput } from '../components/auth/PasswordInput'
 import '../styles/StudentPasswordPage.css'
 
-import { studentLogin } from '../services/authService'
+import { useStudentLogin } from '../hooks/useAuthMutations'
 
 const SESSION_KEY = 'df_student_id'
 
@@ -28,7 +28,8 @@ export default function StudentPasswordPage() {
   const [studentId, setStudentId] = useState('')
   const [password,  setPassword]  = useState('')
   const [apiError,  setApiError]  = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const studentLoginMutation = useStudentLogin()
+  const isLoading = studentLoginMutation.isPending
 
   /* ── Guard: redirect if no studentId in session ─────────────────── */
   useEffect(() => {
@@ -66,25 +67,17 @@ export default function StudentPasswordPage() {
       return
     }
 
-    setIsLoading(true)
     setApiError('')
 
     try {
-      const data = await studentLogin({ studentId, password });
+      await studentLoginMutation.mutateAsync({ studentId, password });
  
       // Backend returns: { message, token, student: { id, name, phone } }
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('role', 'STUDENT');
-      localStorage.setItem('userId', data.student.id);
-      localStorage.setItem('userName', data.student.name);
- 
       navigate('/student/dashboard');
     } catch (error) {
       setApiError(
       error.response?.data?.message || 'Network error. Please check your connection and try again.')
       triggerShake()
-    } finally {
-      setIsLoading(false)
     }
   }
 

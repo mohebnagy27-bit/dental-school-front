@@ -9,7 +9,7 @@ import { PasswordStrengthMeter }   from '../components/auth/PasswordStrengthMete
 import { RequirementItem }         from '../components/auth/RequirementItem'
 import '../styles/StudentCreatePasswordPage.css'
 
-import { activateStudent } from '../services/authService'
+import { useStudentActivation } from '../hooks/useAuthMutations'
 
 const SESSION_KEY = 'df_student_id'
 
@@ -39,8 +39,9 @@ export default function StudentCreatePasswordPage() {
   const [password,       setPassword]       = useState('')
   const [confirmPw,      setConfirmPw]      = useState('')
   const [apiError,       setApiError]       = useState('')
-  const [isLoading,      setIsLoading]      = useState(false)
   const [isSuccess,      setIsSuccess]      = useState(false)
+  const studentActivationMutation = useStudentActivation()
+  const isLoading = studentActivationMutation.isPending
 
   /* ── Guard: redirect if no studentId in session ─────────────────── */
   useEffect(() => {
@@ -69,20 +70,16 @@ export default function StudentCreatePasswordPage() {
     e.preventDefault()
     if (!canSubmit) return
 
-    setIsLoading(true)
     setApiError('')
 
     try {
-
-      await activateStudent({ studentId, newPassword: password });
+      await studentActivationMutation.mutateAsync({ studentId, newPassword: password });
 
       setIsSuccess(true)
       /* Brief success pause before navigating to dashboard */
       setTimeout(() => navigate('/student/dashboard'), 1600)
 
     } catch (error) { setApiError( error.response?.data?.message || 'Network error. Please check your connection and try again.')
-    } finally {
-      setIsLoading(false)
     }
   }
 

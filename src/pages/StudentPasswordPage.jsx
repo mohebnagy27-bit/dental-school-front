@@ -5,8 +5,9 @@ import { AlertCircle }                  from 'lucide-react'
 import { AuthCard }      from '../components/auth/AuthCard'
 import { FormField }     from '../components/auth/FormField'
 import { PasswordInput } from '../components/auth/PasswordInput'
-import { authService }   from '../services/auth.service'
 import '../styles/StudentPasswordPage.css'
+
+import { studentLogin } from '../services/authService'
 
 const SESSION_KEY = 'df_student_id'
 
@@ -69,16 +70,18 @@ export default function StudentPasswordPage() {
     setApiError('')
 
     try {
-      const result = await authService.loginStudent(studentId, password)
-
-      if (result.success) {
-        navigate('/student/dashboard')
-      } else {
-        setApiError(result.message || 'Incorrect password. Please try again.')
-        triggerShake()
-      }
-    } catch {
-      setApiError('Network error. Please check your connection and try again.')
+      const data = await studentLogin({ studentId, password });
+ 
+      // Backend returns: { message, token, student: { id, name, phone } }
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', 'STUDENT');
+      localStorage.setItem('userId', data.student.id);
+      localStorage.setItem('userName', data.student.name);
+ 
+      navigate('/student/dashboard');
+    } catch (error) {
+      setApiError(
+      error.response?.data?.message || 'Network error. Please check your connection and try again.')
       triggerShake()
     } finally {
       setIsLoading(false)

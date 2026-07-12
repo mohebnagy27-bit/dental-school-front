@@ -7,8 +7,9 @@ import { FormField }               from '../components/auth/FormField'
 import { PasswordInput }           from '../components/auth/PasswordInput'
 import { PasswordStrengthMeter }   from '../components/auth/PasswordStrengthMeter'
 import { RequirementItem }         from '../components/auth/RequirementItem'
-import { authService }             from '../services/auth.service'
 import '../styles/StudentCreatePasswordPage.css'
+
+import { activateStudent } from '../services/authService'
 
 const SESSION_KEY = 'df_student_id'
 
@@ -72,17 +73,14 @@ export default function StudentCreatePasswordPage() {
     setApiError('')
 
     try {
-      const result = await authService.createStudentPassword(studentId, password)
 
-      if (result.success) {
-        setIsSuccess(true)
-        /* Brief success pause before navigating to dashboard */
-        setTimeout(() => navigate('/student/dashboard'), 1600)
-      } else {
-        setApiError(result.message || 'Could not set password. Please try again.')
-      }
-    } catch {
-      setApiError('Network error. Please check your connection and try again.')
+      await activateStudent({ studentId, newPassword: password });
+
+      setIsSuccess(true)
+      /* Brief success pause before navigating to dashboard */
+      setTimeout(() => navigate('/student/dashboard'), 1600)
+
+    } catch (error) { setApiError( error.response?.data?.message || 'Network error. Please check your connection and try again.')
     } finally {
       setIsLoading(false)
     }

@@ -4,8 +4,9 @@ import { AlertCircle } from 'lucide-react'
 
 import { AuthCard }    from '../components/auth/AuthCard'
 import { FormField }   from '../components/auth/FormField'
-import { authService } from '../services/auth.service'
 import '../styles/StudentLoginPage.css'
+
+import { checkStudentStatus } from '../services/authService'
 
 /* sessionStorage key shared across the student auth flow */
 const SESSION_KEY = 'df_student_id'
@@ -46,7 +47,7 @@ export default function StudentLoginPage() {
       setFieldError('Student ID is required')
       return false
     }
-    if (trimmed.length < 4) {
+    if (trimmed.length < 5) {
       setFieldError('Please enter a valid Student ID')
       return false
     }
@@ -67,23 +68,30 @@ export default function StudentLoginPage() {
     setApiError('')
 
     try {
-      const result = await authService.checkStudentId(studentId.trim())
+    const data = await checkStudentStatus(studentId);
 
-      if (result.success) {
-        /* Persist the verified ID for the next step */
-        sessionStorage.setItem(SESSION_KEY, result.studentId)
+    sessionStorage.setItem(SESSION_KEY, studentId)
 
-        if (result.firstLoginCompleted) {
-          navigate('/student/password')
-        } else {
-          navigate('/student/create-password')
-        }
-      } else {
-        setApiError(result.message || 'Student ID not found. Please try again.')
-        triggerShake()
-      }
-    } catch {
-      setApiError('Network error. Please check your connection and try again.')
+    if (!data.exists) {
+      setApiError('No student account found with this ID.');
+      return;
+    }
+ 
+    if (!data.isActive) {
+      setApiError('Your account has been disabled. Please contact your administrator.');
+      return;
+    }
+
+    if (!data.hasPassword) {
+      // Student has never logged in — move to activation step
+      navigate('/student/create-password')
+    } else {
+      // Student already has a password — move to login step
+      navigate('/student/password')
+    }
+
+    } catch (error) {
+      setApiError(error.response?.data?.message || 'Network error. Please check your connection and try again.')
       triggerShake()
     } finally {
       setIsLoading(false)

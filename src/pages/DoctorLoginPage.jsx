@@ -5,7 +5,6 @@ import { AlertCircle } from 'lucide-react'
 import { AuthCard }      from '../components/auth/AuthCard'
 import { FormField }     from '../components/auth/FormField'
 import { PasswordInput } from '../components/auth/PasswordInput'
-// import { authService }   from '../services/auth.service'
 import { staffLogin } from '../services/authService'
 import '../styles/DoctorLoginPage.css'
 
@@ -85,15 +84,20 @@ export default function DoctorLoginPage() {
     setApiError('')
 
     try {
-      const result = await staffLogin({identifier: username, password});
-      localStorage.setItem('token', result.token);
 
-      if (result.user.role === "SUPER_ADMIN") {
-
-        navigate("/doctor/dashboard");
-      } else if (result.user.role === "DOCTOR") {
-         navigate("/doctor/dashboard");
-        }
+      const data = await staffLogin({ identifier: username, password });
+ 
+      // Backend returns: { message, token, user: { id, name, email, role } }
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', data.user.role);
+      localStorage.setItem('userId', data.user.id);
+      localStorage.setItem('userName', data.user.name);
+ 
+      if (data.user.role === 'SUPER_ADMIN') {
+      navigate('/admin/dashboard');
+      } else if (data.user.role === 'DOCTOR') {
+      navigate('/doctor/dashboard');
+      }
     } catch (error) {
       setApiError(error.response?.data?.message || 'An unexpected error occurred. Please try again.')
       triggerShake()

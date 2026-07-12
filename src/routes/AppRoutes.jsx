@@ -18,6 +18,8 @@ import PatientRegistrationPage from '../pages/pagedetails/PatientRegistrationPag
 
 import StudentProfilePage from '../pages/student/StudentProfilePage'
 
+import SettingsPage from '../pages/SettingsPage'
+
 
 /**
  * AppRoutes
@@ -66,6 +68,7 @@ export function AppRoutes() {
 
       <Route path="/student/patients/:id"  element={<PatientDetailsPage />} />
       <Route path="/student/profile"      element={<StudentProfilePage />} />
+      <Route path="/admin/settings" element={<SettingsPage />} />
 
     </Routes>
   )

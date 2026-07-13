@@ -1,180 +1,142 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../../components/dashboard/Sidebar';
 import Topbar from '../../components/dashboard/Topbar';
 import PatientDentalChart from '../../components/DentalChart/PatientDentalChart';
+import { useAuth } from '../../context/AuthContext';
+import {
+  bookCase,
+  completeCase,
+  getPatientDetails,
+  unreserveCase,
+  updateCaseNotes,
+} from '../../services/studentService';
 import '../../styles/student/PatientDetailsPage.css';
-/* ================================================================
-   MOCK DATA
-   ================================================================ */
 
-const MOCK_PATIENTS = {
-  'PAT-001': {
-    id: 'PAT-001',
-    name: 'Ahmed Hassan',
-    age: 32,
-    gender: 'Male',
-    phone: '+20 123 456 7890',
-    addedDate: '15 Jan 2024',
-    cases: [
-      {
-        id: 'c1', tooth: 16,
-        diagnosis: 'caries', diagnosisLabel: 'Caries — Class II',
-        treatment: 'Composite Filling',
-        details: 'Mesio-occlusal surface involvement',
-        student: 'Sarah Johnson (STU-20240001)',
-        status: 'Available',
-      },
-      {
-        id: 'c2', tooth: 26,
-        diagnosis: 'caries', diagnosisLabel: 'Caries — Class III',
-        treatment: 'Composite Filling',
-        details: 'Approximal surface caries',
-        student: null,
-        status: 'Available',
-      },
-      {
-        id: 'c3', tooth: 36,
-        diagnosis: 'extraction', diagnosisLabel: 'Extraction',
-        treatment: 'Surgical Extraction',
-        details: 'Non-restorable, Grade III mobility',
-        student: 'Mohammed Ali (STU-20240042)',
-        status: 'Reserved',
-      },
-      {
-        id: 'c4', tooth: 11,
-        diagnosis: 'remaining_root', diagnosisLabel: 'Remaining Root',
-        treatment: 'Extraction',
-        details: 'Post-traumatic root remnant',
-        student: 'Layla Ibrahim (STU-20240099)',
-        status: 'Completed',
-      },
-      {
-        id: 'c5', tooth: 46,
-        diagnosis: 'caries', diagnosisLabel: 'Caries — Class I',
-        treatment: 'Amalgam Restoration',
-        details: 'Pit and fissure occlusal caries',
-        student: null,
-        status: 'Available',
-      },
-    ],
-  },
-  'PAT-002': {
-    id: 'PAT-002',
-    name: 'Fatima Malik',
-    age: 45,
-    gender: 'Female',
-    phone: '+20 155 789 1234',
-    addedDate: '3 Feb 2024',
-    cases: [
-      {
-        id: 'c6', tooth: 14,
-        diagnosis: 'caries', diagnosisLabel: 'Caries — Class V',
-        treatment: 'GIC Restoration',
-        details: 'Cervical caries near gum line',
-        student: null,
-        status: 'Available',
-      },
-      {
-        id: 'c7', tooth: 24,
-        diagnosis: 'extraction', diagnosisLabel: 'Extraction',
-        treatment: 'Simple Extraction',
-        details: 'Periodontally compromised tooth',
-        student: null,
-        status: 'Available',
-      },
-      {
-        id: 'c8', tooth: 17,
-        diagnosis: 'remaining_root', diagnosisLabel: 'Remaining Root',
-        treatment: 'Surgical Extraction',
-        details: 'Root fracture below the gum line',
-        student: 'Sarah Johnson (STU-20240001)',
-        status: 'Reserved',
-      },
-    ],
-  },
-  'PAT-003': {
-    id: 'PAT-003',
-    name: 'Omar Khalid',
-    age: 28,
-    gender: 'Male',
-    phone: '+20 100 234 5678',
-    addedDate: '22 Jan 2024',
-    cases: [
-      {
-        id: 'c9', tooth: 47,
-        diagnosis: 'caries', diagnosisLabel: 'Caries — Class II',
-        treatment: 'Composite Filling',
-        details: 'Distal surface caries extending to pulp',
-        student: null,
-        status: 'Available',
-      },
-      {
-        id: 'c10', tooth: 21,
-        diagnosis: 'remaining_root', diagnosisLabel: 'Remaining Root',
-        treatment: 'Extraction + Implant Planning',
-        details: 'Tooth fracture, requires extraction',
-        student: 'Mohammed Ali (STU-20240042)',
-        status: 'Completed',
-      },
-    ],
-  },
-};
+const valueOr = (...values) => values.find((value) => value !== undefined && value !== null && value !== '');
 
-/* ================================================================
-   STATUS BADGE
-   ================================================================ */
+function getId(value) {
+  if (value && typeof value === 'object') return value.id || value._id || value.studentId || value.userId;
+  return value;
+}
+
+function getPatient(response) {
+  const patient = response?.patient || response?.data?.patient || response?.data || response;
+  return patient && typeof patient === 'object' && !Array.isArray(patient) ? patient : null;
+}
+
+function getPatientCases(patient) {
+  const cases = patient?.cases || patient?.patientCases || patient?.caseRecords || [];
+  return Array.isArray(cases) ? cases : [];
+}
+
+function getPatientName(patient) {
+  return valueOr(
+    patient?.name,
+    patient?.fullName,
+    [patient?.firstName, patient?.lastName].filter(Boolean).join(' '),
+  ) || '—';
+}
+
+function getDiagnosisKey(value) {
+  const normalized = String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
+  if (normalized.includes('caries')) return 'caries';
+  if (normalized.includes('extract')) return 'extraction';
+  if (normalized.includes('remaining') && normalized.includes('root')) return 'remaining_root';
+  return normalized || 'other';
+}
+
+function formatStatus(status) {
+  return String(status || 'AVAILABLE').toUpperCase();
+}
+
+function formatStatusLabel(status) {
+  const normalized = formatStatus(status).toLowerCase();
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function normalizeCase(caseInfo) {
+  const diagnosisSource = valueOr(
+    caseInfo.diagnosisCategory,
+    caseInfo.diagnosis?.type,
+    caseInfo.diagnosis?.category,
+    caseInfo.diagnosis,
+  );
+  const diagnosis = getDiagnosisKey(diagnosisSource);
+  const tooth = valueOr(
+    caseInfo.toothNumber,
+    caseInfo.tooth,
+    Array.isArray(caseInfo.teeth) ? caseInfo.teeth[0] : undefined,
+    Array.isArray(caseInfo.treatmentTeeth) ? caseInfo.treatmentTeeth[0] : undefined,
+  );
+  const assignedStudent = valueOr(
+    caseInfo.assignedStudent,
+    caseInfo.reservedBy,
+    caseInfo.bookedBy,
+    caseInfo.student,
+    caseInfo.studentId,
+  );
+
+  return {
+    id: getId(caseInfo) || caseInfo.caseId,
+    tooth: tooth === undefined ? '—' : tooth,
+    diagnosis,
+    diagnosisLabel: valueOr(
+      caseInfo.diagnosisLabel,
+      caseInfo.diagnosis?.label,
+      typeof diagnosisSource === 'string' ? diagnosisSource : undefined,
+    ) || '—',
+    treatment: valueOr(
+      caseInfo.treatmentType,
+      caseInfo.treatment?.type,
+      caseInfo.treatment?.name,
+      typeof caseInfo.treatment === 'string' ? caseInfo.treatment : undefined,
+      caseInfo.treatmentLabel,
+    ) || '—',
+    details: valueOr(caseInfo.details, caseInfo.description, caseInfo.caseDetails),
+    notes: valueOr(caseInfo.notes, caseInfo.caseNotes, caseInfo.note),
+    status: formatStatus(valueOr(caseInfo.status, caseInfo.caseStatus, caseInfo.reservationStatus)),
+    assignedStudentId: getId(assignedStudent),
+  };
+}
+
+function isReservedByCurrentStudent(caseInfo, studentId) {
+  return Boolean(studentId && caseInfo.assignedStudentId && String(caseInfo.assignedStudentId) === String(studentId));
+}
 
 const StatusBadge = ({ status }) => (
   <span className={`status-badge status-badge--${status.toLowerCase()}`}>
-    {status}
+    {formatStatusLabel(status)}
   </span>
 );
-
-/* ================================================================
-   DIAGNOSIS BADGE
-   ================================================================ */
 
 const DiagBadge = ({ diagnosis, label }) => (
   <span className={`diag-badge diag-badge--${diagnosis}`}>{label}</span>
 );
 
-/* ================================================================
-   TOAST NOTIFICATION
-   ================================================================ */
-
-const Toast = ({ notification, onClose }) => {
+function Toast({ notification, onClose }) {
   if (!notification) return null;
+
   return (
     <div className={`pdp-toast pdp-toast--${notification.type}`} role="alert" aria-live="polite">
-      <span className="pdp-toast__icon" aria-hidden="true">
-        {notification.type === 'success' ? (
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="7.5" stroke="currentColor" />
-            <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        ) : '!'}
-      </span>
-      <span className="pdp-toast__msg">{notification.msg}</span>
+      <span className="pdp-toast__icon" aria-hidden="true">{notification.type === 'success' ? '✓' : '!'}</span>
+      <span className="pdp-toast__msg">{notification.message}</span>
       <button type="button" className="pdp-toast__close" onClick={onClose} aria-label="Dismiss">×</button>
     </div>
   );
-};
+}
 
-/* ================================================================
-   RESERVE DIALOG
-   ================================================================ */
+function StatusDialog({ caseInfo, isPending, onComplete, onUnreserve }) {
+  if (!caseInfo) return null;
 
-const ReserveDialog = ({ open, caseInfo, onConfirm, onCancel }) => {
-  if (!open || !caseInfo) return null;
   return (
-    <div className="pdp-dialog-overlay" onClick={onCancel} role="dialog" aria-modal="true" aria-labelledby="reserve-title">
-      <div className="pdp-dialog" onClick={(e) => e.stopPropagation()}>
+    <div className="pdp-dialog-overlay" role="dialog" aria-modal="true" aria-labelledby="status-title">
+      <div className="pdp-dialog">
         <div className="pdp-dialog__header">
-          <h2 className="pdp-dialog__title" id="reserve-title">Reserve Case</h2>
+          <h2 className="pdp-dialog__title" id="status-title">Change Case Status</h2>
         </div>
         <div className="pdp-dialog__body">
-          <p className="pdp-dialog__msg">Are you sure you want to reserve this case?</p>
           <div className="pdp-dialog__detail">
             <span>Tooth {caseInfo.tooth}</span>
             <span>—</span>
@@ -182,278 +144,312 @@ const ReserveDialog = ({ open, caseInfo, onConfirm, onCancel }) => {
           </div>
         </div>
         <div className="pdp-dialog__footer">
-          <button type="button" className="pdp-dialog__btn pdp-dialog__btn--cancel" onClick={onCancel}>
-            Cancel
+          <button type="button" className="pdp-dialog__btn pdp-dialog__btn--confirm" onClick={onComplete} disabled={isPending}>
+            Mark as Completed
           </button>
-          <button type="button" className="pdp-dialog__btn pdp-dialog__btn--confirm" onClick={onConfirm}>
-            Confirm Reserve
+          <button type="button" className="pdp-dialog__btn pdp-dialog__btn--cancel" onClick={onUnreserve} disabled={isPending}>
+            Cancel Reservation
           </button>
         </div>
       </div>
     </div>
   );
-};
+}
 
-/* ================================================================
-   CASE CARD
-   ================================================================ */
+function NotesDialog({ caseInfo, isPending, onCancel, onSave }) {
+  const [notes, setNotes] = useState(caseInfo?.notes || '');
+
+  useEffect(() => setNotes(caseInfo?.notes || ''), [caseInfo]);
+
+  if (!caseInfo) return null;
+
+  return (
+    <div className="pdp-dialog-overlay" onClick={onCancel} role="dialog" aria-modal="true" aria-labelledby="notes-title">
+      <div className="pdp-dialog" onClick={(event) => event.stopPropagation()}>
+        <div className="pdp-dialog__header">
+          <h2 className="pdp-dialog__title" id="notes-title">Case Notes</h2>
+        </div>
+        <div className="pdp-dialog__body">
+          <textarea
+            className="pdp-dialog__textarea"
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            placeholder="Enter notes..."
+            aria-label={`Notes for tooth ${caseInfo.tooth}`}
+          />
+        </div>
+        <div className="pdp-dialog__footer">
+          <button type="button" className="pdp-dialog__btn pdp-dialog__btn--cancel" onClick={onCancel} disabled={isPending}>
+            Cancel
+          </button>
+          <button type="button" className="pdp-dialog__btn pdp-dialog__btn--confirm" onClick={() => onSave(notes)} disabled={isPending}>
+            Save Note
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const CaseCard = React.forwardRef(function CaseCard(
-  { c, highlighted, onReserve },
+  { caseInfo, highlighted, isPending, studentId, onReserve, onChangeStatus, onAddNote },
   ref,
 ) {
+  const canChangeStatus = caseInfo.status === 'RESERVED' && isReservedByCurrentStudent(caseInfo, studentId);
+
   return (
-    <div
-      ref={ref}
-      id={`case-${c.tooth}`}
-      className={`case-card${highlighted ? ' case-card--highlighted' : ''}`}
-    >
-      {/* Card header */}
+    <div ref={ref} id={`case-${caseInfo.id}`} className={`case-card${highlighted ? ' case-card--highlighted' : ''}`}>
       <div className="case-card__header">
-        <div className="case-card__tooth-badge">Tooth {c.tooth}</div>
-        <DiagBadge diagnosis={c.diagnosis} label={c.diagnosisLabel} />
-        <StatusBadge status={c.status} />
+        <div className="case-card__tooth-badge">Tooth {caseInfo.tooth}</div>
+        <DiagBadge diagnosis={caseInfo.diagnosis} label={caseInfo.diagnosisLabel} />
+        <StatusBadge status={caseInfo.status} />
       </div>
 
-      {/* Card body */}
       <dl className="case-card__dl">
         <div className="case-card__dl-row">
           <dt>Treatment</dt>
-          <dd>{c.treatment}</dd>
+          <dd>{caseInfo.treatment}</dd>
         </div>
-        {c.details && (
+        {caseInfo.details && (
           <div className="case-card__dl-row">
             <dt>Details</dt>
-            <dd>{c.details}</dd>
+            <dd>{caseInfo.details}</dd>
           </div>
         )}
         <div className="case-card__dl-row">
-          <dt>Assigned Student</dt>
-          <dd>{c.student || <span className="case-card__unassigned">Unassigned</span>}</dd>
+          <dt>Notes</dt>
+          <dd>{caseInfo.notes || <span className="case-card__unassigned">No notes available.</span>}</dd>
         </div>
       </dl>
 
-      {/* Reserve button — Available cases only */}
-      {c.status === 'Available' && (
-        <div className="case-card__footer">
-          <button
-            type="button"
-            className="case-card__reserve-btn"
-            onClick={() => onReserve(c)}
-          >
-            Reserve Case
+      <div className="case-card__footer">
+        {caseInfo.status === 'AVAILABLE' && (
+          <button type="button" className="case-card__reserve-btn" onClick={() => onReserve(caseInfo)} disabled={isPending}>
+            Reserve
           </button>
-        </div>
-      )}
+        )}
+        {canChangeStatus && (
+          <button type="button" className="case-card__reserve-btn" onClick={() => onChangeStatus(caseInfo)} disabled={isPending}>
+            Change Status
+          </button>
+        )}
+        <button type="button" className="case-card__note-btn" onClick={() => onAddNote(caseInfo)}>
+          Add Note
+        </button>
+      </div>
     </div>
   );
 });
 
-/* ================================================================
-   MAIN PAGE
-   ================================================================ */
+function PatientDetailsContent({ children, sidebarOpen, setSidebarOpen }) {
+  return (
+    <div className="dashboard-layout">
+      <Sidebar role="student" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+      <div className="dashboard-main">
+        <Topbar onMenuClick={() => setSidebarOpen(true)} />
+        <main className="dashboard-content pdp">{children}</main>
+      </div>
+    </div>
+  );
+}
 
 export default function PatientDetailsPage() {
-  const { id }     = useParams();
-  const navigate   = useNavigate();
-
-  /* Sidebar */
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [highlightedCase, setHighlightedCase] = useState(null);
+  const [statusTarget, setStatusTarget] = useState(null);
+  const [notesTarget, setNotesTarget] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const highlightTimer = useRef(null);
+  const notificationTimer = useRef(null);
+  const caseRefs = useRef({});
+  const studentId = user?.id || localStorage.getItem('userId');
+  const patientQueryKey = ['student-patient-details', id];
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: patientQueryKey,
+    queryFn: () => getPatientDetails(id),
+    enabled: Boolean(id),
+    retry: false,
+  });
+
+  const refreshPatientDetails = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: patientQueryKey, exact: true }),
+    [patientQueryKey, queryClient],
+  );
+
+  const showNotification = useCallback((type, message) => {
+    clearTimeout(notificationTimer.current);
+    setNotification({ type, message });
+    notificationTimer.current = setTimeout(() => setNotification(null), 3500);
+  }, []);
+
+  const reserveMutation = useMutation({
+    mutationFn: (caseInfo) => bookCase(caseInfo.id),
+    onSuccess: async (result, caseInfo) => {
+      await refreshPatientDetails();
+      showNotification('success', `Case for Tooth ${caseInfo.tooth} reserved successfully.`);
+    },
+    onError: () => showNotification('error', 'Unable to reserve this case. Please try again.'),
+  });
+
+  const completeMutation = useMutation({
+    mutationFn: (caseInfo) => completeCase(caseInfo.id),
+    onSuccess: async (result, caseInfo) => {
+      await refreshPatientDetails();
+      setStatusTarget(null);
+      showNotification('success', `Case for Tooth ${caseInfo.tooth} marked as completed.`);
+    },
+    onError: () => showNotification('error', 'Unable to complete this case. Please try again.'),
+  });
+
+  const unreserveMutation = useMutation({
+    mutationFn: (caseInfo) => unreserveCase(caseInfo.id),
+    onSuccess: async (result, caseInfo) => {
+      await refreshPatientDetails();
+      setStatusTarget(null);
+      showNotification('success', `Reservation for Tooth ${caseInfo.tooth} cancelled.`);
+    },
+    onError: () => showNotification('error', 'Unable to cancel this reservation. Please try again.'),
+  });
+
+  const notesMutation = useMutation({
+    mutationFn: ({ caseInfo, notes }) => updateCaseNotes(caseInfo.id, notes),
+    onSuccess: async (result, { caseInfo }) => {
+      await refreshPatientDetails();
+      setNotesTarget(null);
+      showNotification('success', `Notes for Tooth ${caseInfo.tooth} saved.`);
+    },
+    onError: () => showNotification('error', 'Unable to save notes. Please try again.'),
+  });
+
   useEffect(() => {
-    if (sidebarOpen) document.body.classList.add('sidebar-open');
-    else             document.body.classList.remove('sidebar-open');
+    document.body.classList.toggle('sidebar-open', sidebarOpen);
     return () => document.body.classList.remove('sidebar-open');
   }, [sidebarOpen]);
 
-  /* Patient data — use param id, fall back to first patient */
-  const patientSource = MOCK_PATIENTS[id] || MOCK_PATIENTS['PAT-001'];
-
-  /* Cases as mutable state (so reserve can update status) */
-  const [cases, setCases] = useState(() => patientSource.cases);
-
-  /* Highlighted case (from chart tooth click) */
-  const [highlightedCase, setHighlightedCase] = useState(null);
-  const highlightTimer = useRef(null);
-  const caseRefs       = useRef({});
-
-  /* Reserve dialog */
-  const [reserveTarget, setReserveTarget] = useState(null);
-
-  /* Toast notification */
-  const [notification, setNotification] = useState(null);
-  const notifTimer = useRef(null);
-
-  /* Cleanup on unmount */
   useEffect(() => () => {
     clearTimeout(highlightTimer.current);
-    clearTimeout(notifTimer.current);
+    clearTimeout(notificationTimer.current);
   }, []);
 
-  /* ── Tooth click → scroll + highlight ── */
+  const patient = useMemo(() => getPatient(data), [data]);
+  const cases = useMemo(() => getPatientCases(patient).map(normalizeCase).filter((caseInfo) => caseInfo.id), [patient]);
+  const counts = useMemo(() => ({
+    available: cases.filter((caseInfo) => caseInfo.status === 'AVAILABLE').length,
+    reserved: cases.filter((caseInfo) => caseInfo.status === 'RESERVED').length,
+    completed: cases.filter((caseInfo) => caseInfo.status === 'COMPLETED').length,
+  }), [cases]);
+
   const handleToothClick = useCallback((tooth) => {
-    const match = cases.find((c) => c.tooth === tooth);
-    if (!match) return;
+    const caseInfo = cases.find((currentCase) => String(currentCase.tooth) === String(tooth));
+    if (!caseInfo) return;
 
-    /* Clear any pending highlight timer */
     clearTimeout(highlightTimer.current);
-
-    /* Scroll to case card */
-    const el = caseRefs.current[match.id];
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    /* Set highlight */
-    setHighlightedCase(match.id);
+    caseRefs.current[caseInfo.id]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setHighlightedCase(caseInfo.id);
     highlightTimer.current = setTimeout(() => setHighlightedCase(null), 2500);
   }, [cases]);
 
-  /* ── Reserve ── */
-  const handleReserveClick = useCallback((c) => {
-    setReserveTarget(c);
-  }, []);
-
-  const handleReserveConfirm = useCallback(() => {
-    if (!reserveTarget) return;
-    const caseId = reserveTarget.id;
-
-    setCases((prev) =>
-      prev.map((c) => (c.id === caseId ? { ...c, status: 'Reserved' } : c)),
-    );
-    setReserveTarget(null);
-
-    /* Show success toast */
-    clearTimeout(notifTimer.current);
-    setNotification({ type: 'success', msg: `Case for Tooth ${reserveTarget.tooth} reserved successfully.` });
-    notifTimer.current = setTimeout(() => setNotification(null), 3500);
-  }, [reserveTarget]);
-
-  const handleReserveCancel = useCallback(() => setReserveTarget(null), []);
-
-  /* ── Count by status ── */
-  const counts = useMemo(() => ({
-    available: cases.filter((c) => c.status === 'Available').length,
-    reserved:  cases.filter((c) => c.status === 'Reserved').length,
-    completed: cases.filter((c) => c.status === 'Completed').length,
-  }), [cases]);
-
-  /* ── No patient found ── */
-  if (!patientSource) {
-    return (
-      <div className="dashboard-layout">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="dashboard-main">
-          <Topbar onMenuClick={() => setSidebarOpen(true)} />
-          <main className="dashboard-content pdp">
-            <p className="pdp__not-found">Patient not found.</p>
-          </main>
-        </div>
-      </div>
-    );
+  if (isLoading) {
+    return <PatientDetailsContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}><p className="pdp__not-found">Loading patient details…</p></PatientDetailsContent>;
   }
 
+  if (isError || !patient) {
+    const message = error?.response?.status === 404 || !patient
+      ? 'Patient not found.'
+      : 'Unable to load patient details. Please try again.';
+    return <PatientDetailsContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}><p className="pdp__not-found">{message}</p></PatientDetailsContent>;
+  }
+
+  const patientName = getPatientName(patient);
+  const patientId = valueOr(patient.patientId, patient.id, patient._id, id) || '—';
+  const age = valueOr(patient.age, patient.patientAge);
+  const gender = valueOr(patient.gender, patient.sex);
+  const phone = valueOr(patient.phone, patient.phoneNumber, patient.mobile);
+  const isStatusPending = completeMutation.isPending || unreserveMutation.isPending;
+
   return (
-    <div className="dashboard-layout">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      {sidebarOpen && (
-        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
-      )}
+    <PatientDetailsContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
+      <div className="pdp__header">
+        <button type="button" className="pdp__back-btn" onClick={() => navigate(-1)} aria-label="Go back">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M10 13L5 8l5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Back
+        </button>
 
-      <div className="dashboard-main">
-        <Topbar onMenuClick={() => setSidebarOpen(true)} />
-
-        <main className="dashboard-content pdp">
-
-          {/* ── Page header ── */}
-          <div className="pdp__header">
-            <button
-              type="button"
-              className="pdp__back-btn"
-              onClick={() => navigate(-1)}
-              aria-label="Go back"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M10 13L5 8l5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Back
-            </button>
-
-            <div className="pdp__patient-info">
-              <div className="pdp__patient-avatar" aria-hidden="true">
-                {patientSource.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-              </div>
-              <div>
-                <h1 className="pdp__patient-name">{patientSource.name}</h1>
-                <div className="pdp__patient-meta">
-                  <span>{patientSource.id}</span>
-                  <span className="pdp__dot" aria-hidden="true">·</span>
-                  <span>{patientSource.age} yrs</span>
-                  <span className="pdp__dot" aria-hidden="true">·</span>
-                  <span>{patientSource.gender}</span>
-                  <span className="pdp__dot" aria-hidden="true">·</span>
-                  <span>{patientSource.phone}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Status summary pills */}
-            <div className="pdp__status-pills">
-              <span className="pdp__pill pdp__pill--available">{counts.available} Available</span>
-              <span className="pdp__pill pdp__pill--reserved">{counts.reserved} Reserved</span>
-              <span className="pdp__pill pdp__pill--completed">{counts.completed} Completed</span>
+        <div className="pdp__patient-info">
+          <div className="pdp__patient-avatar" aria-hidden="true">{patientName.split(' ').filter(Boolean).map((name) => name[0]).join('').slice(0, 2)}</div>
+          <div>
+            <h1 className="pdp__patient-name">{patientName}</h1>
+            <div className="pdp__patient-meta">
+              <span>{patientId}</span>
+              <span className="pdp__dot" aria-hidden="true">·</span>
+              <span>{age === undefined ? '—' : `${age} yrs`}</span>
+              <span className="pdp__dot" aria-hidden="true">·</span>
+              <span>{gender || '—'}</span>
+              <span className="pdp__dot" aria-hidden="true">·</span>
+              <span>{phone || '—'}</span>
             </div>
           </div>
+        </div>
 
-          {/* ── Dental Chart ── */}
-          <section className="pdp__section">
-            <div className="pdp__section-header">
-              <h2 className="pdp__section-title">Dental Overview</h2>
-              <span className="pdp__section-badge">{cases.length} {cases.length === 1 ? 'case' : 'cases'}</span>
-            </div>
-            <div className="pdp__section-body">
-              <PatientDentalChart
-                cases={cases}
-                onToothClick={handleToothClick}
-              />
-            </div>
-          </section>
-
-          {/* ── Cases Grid ── */}
-          <section className="pdp__section">
-            <div className="pdp__section-header">
-              <h2 className="pdp__section-title">Patient Cases</h2>
-            </div>
-            <div className="pdp__section-body">
-              {cases.length === 0 ? (
-                <p className="pdp__empty">No cases recorded for this patient.</p>
-              ) : (
-                <div className="case-grid">
-                  {cases.map((c) => (
-                    <CaseCard
-                      key={c.id}
-                      c={c}
-                      highlighted={highlightedCase === c.id}
-                      onReserve={handleReserveClick}
-                      ref={(el) => { caseRefs.current[c.id] = el; }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-        </main>
+        <div className="pdp__status-pills">
+          <span className="pdp__pill pdp__pill--available">{counts.available} Available</span>
+          <span className="pdp__pill pdp__pill--reserved">{counts.reserved} Reserved</span>
+          <span className="pdp__pill pdp__pill--completed">{counts.completed} Completed</span>
+        </div>
       </div>
 
-      {/* ── Reserve Dialog ── */}
-      <ReserveDialog
-        open={!!reserveTarget}
-        caseInfo={reserveTarget}
-        onConfirm={handleReserveConfirm}
-        onCancel={handleReserveCancel}
-      />
+      <section className="pdp__section">
+        <div className="pdp__section-header">
+          <h2 className="pdp__section-title">Dental Overview</h2>
+          <span className="pdp__section-badge">{cases.length} {cases.length === 1 ? 'case' : 'cases'}</span>
+        </div>
+        <div className="pdp__section-body"><PatientDentalChart cases={cases} onToothClick={handleToothClick} /></div>
+      </section>
 
-      {/* ── Toast ── */}
+      <section className="pdp__section">
+        <div className="pdp__section-header"><h2 className="pdp__section-title">Patient Cases</h2></div>
+        <div className="pdp__section-body">
+          {cases.length === 0 ? <p className="pdp__empty">No cases recorded for this patient.</p> : (
+            <div className="case-grid">
+              {cases.map((caseInfo) => (
+                <CaseCard
+                  key={caseInfo.id}
+                  ref={(element) => { caseRefs.current[caseInfo.id] = element; }}
+                  caseInfo={caseInfo}
+                  highlighted={highlightedCase === caseInfo.id}
+                  studentId={studentId}
+                  isPending={reserveMutation.isPending}
+                  onReserve={(currentCase) => reserveMutation.mutate(currentCase)}
+                  onChangeStatus={setStatusTarget}
+                  onAddNote={setNotesTarget}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <StatusDialog
+        caseInfo={statusTarget}
+        isPending={isStatusPending}
+        onComplete={() => completeMutation.mutate(statusTarget)}
+        onUnreserve={() => unreserveMutation.mutate(statusTarget)}
+      />
+      <NotesDialog
+        caseInfo={notesTarget}
+        isPending={notesMutation.isPending}
+        onCancel={() => setNotesTarget(null)}
+        onSave={(notes) => notesMutation.mutate({ caseInfo: notesTarget, notes })}
+      />
       <Toast notification={notification} onClose={() => setNotification(null)} />
-    </div>
+    </PatientDetailsContent>
   );
 }

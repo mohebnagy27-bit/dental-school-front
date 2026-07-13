@@ -1,36 +1,103 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/dashboard/Sidebar';
 import Topbar from '../components/dashboard/Topbar';
 import StatCard from '../components/dashboard/StatCard';
 import RecentTable from '../components/dashboard/RecentTable';
 import SearchBar from '../components/dashboard/SearchBar';
+import {
+  getCases,
+  getCompletedCases,
+  getPatients,
+  getReservedCases,
+} from '../services/studentService';
+import { useAuth } from '../context/AuthContext';
 import '../styles/StudentDashboard.css';
 
-/* ── Mock Data ─────────────────────────────────── */
-const MOCK_STUDENT_STATS = {
-  availableCases: 47,
-  reservedCases: 3,
-  completedCases: 18,
-};
-const MOCK_CASES = [
-  { id: 1, patient: 'Ahmed Hassan',   tooth: '16',  diagnosis: 'Caries – Class II',       status: 'available' },
-  { id: 2, patient: 'Sara Khaled',    tooth: '21',  diagnosis: 'Root Canal Treatment',     status: 'reserved'  },
-  { id: 3, patient: 'Mohamed Ali',    tooth: '36',  diagnosis: 'Extraction – Impacted',    status: 'completed' },
-  { id: 4, patient: 'Nour Ibrahim',   tooth: '11',  diagnosis: 'Crown Restoration',        status: 'available' },
-  { id: 5, patient: 'Layla Mahmoud',  tooth: '46',  diagnosis: 'Caries – Class I',         status: 'available' },
-  { id: 6, patient: 'Omar Farouk',    tooth: '24',  diagnosis: 'Pulp Capping',             status: 'reserved'  },
-  { id: 7, patient: 'Rania Sayed',    tooth: '14',  diagnosis: 'Fixed Partial Denture',    status: 'completed' },
-  { id: 8, patient: 'Khaled Nasser',  tooth: '31',  diagnosis: 'Scaling & Root Planing',   status: 'available' },
-];
+function getCaseList(response) {
+  if (Array.isArray(response)) return response;
+  return response?.cases || response?.data || [];
+}
 
-const MOCK_STUDENT = {
-  name: 'Yasmin El-Sayed',
-  id: 'STU-2024-0058',
-  year: '4th Year',
-  program: 'BDS – Cairo University',
-  initials: 'YE',
+function getPatientList(response) {
+  if (Array.isArray(response)) return response;
+  return response?.patients || response?.data || [];
+}
+
+function calculateCaseStatistics(cases) {
+  return cases.reduce(
+    (statistics, currentCase) => {
+      const status = currentCase.status?.toUpperCase();
+
+      if (status === 'AVAILABLE') statistics.availableCases += 1;
+      if (status === 'RESERVED') statistics.reservedCases += 1;
+      if (status === 'COMPLETED') statistics.completedCases += 1;
+
+      return statistics;
+    },
+    { availableCases: 0, reservedCases: 0, completedCases: 0 }
+  );
+}
+
+const TREATMENT_TYPE_COLORS = {
+  caries: '#2563eb',
+  'root canal treatment': '#f59e0b',
+  extraction: '#dc2626',
+  'crown restoration': '#7c3aed',
+  'pulp capping': '#0891b2',
+  'fixed partial denture': '#db2777',
+  'scaling & root planing': '#16a34a',
 };
+
+function getPatientCases(patient) {
+  const cases = patient.cases || patient.patientCases || [];
+  return Array.isArray(cases) ? cases : [];
+}
+
+function getPatientName(patient) {
+  if (patient.name || patient.fullName) return patient.name || patient.fullName;
+
+  return [patient.firstName, patient.lastName].filter(Boolean).join(' ') || '—';
+}
+
+function getTreatmentTypes(patient) {
+  const treatments = getPatientCases(patient)
+    .map((currentCase) => currentCase.treatmentType || currentCase.treatment?.type || currentCase.treatment)
+    .filter((treatment) => typeof treatment === 'string' && treatment.trim());
+
+  return [...new Set(treatments)];
+}
+
+function getTreatmentColor(treatment) {
+  return TREATMENT_TYPE_COLORS[treatment.toLowerCase()] || '#64748b';
+}
+
+function getPatientSearchValues(patient, treatmentTypes) {
+  const caseValues = getPatientCases(patient).flatMap((currentCase) => [
+    currentCase.treatmentType,
+    currentCase.treatment?.type,
+    currentCase.problem,
+    currentCase.diagnosis,
+    currentCase.toothNumber,
+    currentCase.tooth,
+  ]);
+
+  return [getPatientName(patient), ...treatmentTypes, ...caseValues]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+}
+
+function getInitials(name) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+}
 
 /* ── Stat icons ─────────────────────────────────── */
 const Icon = {
@@ -56,15 +123,26 @@ const Icon = {
 };
 
 /* ── Status badge ───────────────────────────────── */
-function StatusBadge({ value }) {
-  return <span className={`status-badge status-badge--${value}`}>{value}</span>;
-}
-
-const CASE_COLUMNS = [
-  { key: 'patient',   label: 'Patient Name' },
-  { key: 'tooth',     label: 'Tooth No.', render: (v) => <strong>#{v}</strong> },
-  { key: 'diagnosis', label: 'Diagnosis' },
-  { key: 'status',    label: 'Status', render: (v) => <StatusBadge value={v} /> },
+const PATIENT_COLUMNS = [
+  { key: 'patientName', label: 'Patient Name' },
+  {
+    key: 'treatmentTypes',
+    label: 'Treatment Types',
+    render: (treatmentTypes) => (
+      <div className="patient-treatment-indicators">
+        {treatmentTypes.map((treatment) => (
+          <span
+            key={treatment}
+            className="patient-treatment-indicator"
+            style={{ '--treatment-color': getTreatmentColor(treatment) }}
+            title={treatment}
+            aria-label={treatment}
+          />
+        ))}
+      </div>
+    ),
+  },
+  { key: 'phoneNumber', label: 'Phone Number' },
 ];
 
 /* ── Filter options ─────────────────────────────── */
@@ -78,30 +156,82 @@ const FILTERS = [
 /* ── Component ──────────────────────────────────── */
 export default function StudentDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const studentId = localStorage.getItem('userId');
+
+  const { data: allCasesResponse } = useQuery({
+    queryKey: ['student-cases'],
+    queryFn: getCases,
+  });
+  const { data: reservedCasesResponse } = useQuery({
+    queryKey: ['student-reserved-cases', studentId],
+    queryFn: () => getReservedCases(studentId),
+    enabled: Boolean(studentId),
+  });
+  const { data: completedCasesResponse } = useQuery({
+    queryKey: ['student-completed-cases', studentId],
+    queryFn: () => getCompletedCases(studentId),
+    enabled: Boolean(studentId),
+  });
+  const { data: patientsResponse } = useQuery({
+    queryKey: ['student-patients'],
+    queryFn: getPatients,
+  });
+
+  const caseStatistics = calculateCaseStatistics(getCaseList(allCasesResponse));
+  const reservedCases = getCaseList(reservedCasesResponse);
+  const completedCases = getCaseList(completedCasesResponse);
+  const assignedCasesCount = reservedCases.length + completedCases.length;
+  const progressPercentage = assignedCasesCount
+    ? Math.round((completedCases.length / assignedCasesCount) * 100)
+    : 0;
+  const studentName = user?.name || '';
+  const studentProfile = {
+    name: studentName,
+    id: user?.id || studentId || '',
+    phoneNumber: user?.phone || user?.phoneNumber || '',
+    initials: getInitials(studentName),
+  };
+  const patientRows = useMemo(
+    () => getPatientList(patientsResponse).map((patient) => {
+      const treatmentTypes = getTreatmentTypes(patient);
+
+      return {
+        id: patient.id || patient._id,
+        patientName: getPatientName(patient),
+        phoneNumber: patient.phone || patient.phoneNumber || '—',
+        treatmentTypes,
+        searchValues: getPatientSearchValues(patient, treatmentTypes),
+        cases: getPatientCases(patient),
+      };
+    }),
+    [patientsResponse]
+  );
 
   function handleLogout() {
     navigate('/student/login');
   }
 
-  /* Apply filter + search */
-  let displayedCases = [...MOCK_CASES];
+  /* Apply filter + search to the loaded patient data */
+  let displayedPatients = [...patientRows];
 
   if (filter === 'available') {
-    displayedCases = displayedCases.filter((c) => c.status === 'available');
+    displayedPatients = displayedPatients.filter((patient) =>
+      patient.cases.some((currentCase) => currentCase.status?.toUpperCase() === 'AVAILABLE')
+    );
   } else if (filter === 'oldest') {
-    displayedCases = displayedCases.reverse();
+    displayedPatients = displayedPatients.reverse();
   }
 
   if (search.trim()) {
-    displayedCases = displayedCases.filter(
-      (c) =>
-        c.patient.toLowerCase().includes(search.toLowerCase()) ||
-        c.diagnosis.toLowerCase().includes(search.toLowerCase())
-    );
+    const query = search.trim().toLowerCase();
+    displayedPatients = displayedPatients.filter((patient) => patient.searchValues.includes(query));
   }
+
+  const visiblePatients = displayedPatients.slice(0, 10);
 
   const handleClear = () => {
     setSearch('');
@@ -119,7 +249,7 @@ export default function StudentDashboard() {
       <div className="student-dashboard__main">
         <Topbar
           pageTitle="Student Dashboard"
-          user={{ name: MOCK_STUDENT.name, role: 'Student', initials: MOCK_STUDENT.initials }}
+          user={{ name: studentProfile.name, role: 'Student', initials: studentProfile.initials }}
           onMenuClick={() => setSidebarOpen(true)}
           // searchValue={search}
           // onSearchChange={(e) => setSearch(e.target.value)}
@@ -128,13 +258,14 @@ export default function StudentDashboard() {
         <div className="student-dashboard__content">
           {/* Profile summary */}
           <div className="student-profile-card">
-            <div className="student-profile-card__avatar">{MOCK_STUDENT.initials}</div>
+            <div className="student-profile-card__avatar">{studentProfile.initials}</div>
             <div className="student-profile-card__info">
-              <h2 className="student-profile-card__name">{MOCK_STUDENT.name}</h2>
+              <h2 className="student-profile-card__name">{studentProfile.name}</h2>
               <div className="student-profile-card__meta">
-                <span className="student-profile-card__tag">{MOCK_STUDENT.year}</span>
-                <span className="student-profile-card__id">{MOCK_STUDENT.id}</span>
-                <span className="student-profile-card__program">{MOCK_STUDENT.program}</span>
+                <span className="student-profile-card__tag" />
+                <span className="student-profile-card__id">{studentProfile.id}</span>
+                <span className="student-profile-card__id">{studentProfile.phoneNumber}</span>
+                <span className="student-profile-card__program" />
               </div>
             </div>
             <div className="student-profile-card__progress">
@@ -142,20 +273,20 @@ export default function StudentDashboard() {
               <div className="student-profile-card__progress-bar-wrap">
                 <div
                   className="student-profile-card__progress-bar"
-                  style={{ width: `${Math.round((MOCK_STUDENT_STATS.completedCases / (MOCK_STUDENT_STATS.availableCases + MOCK_STUDENT_STATS.completedCases)) * 100)}%` }}
+                  style={{ width: `${progressPercentage}%` }}
                 />
               </div>
               <span className="student-profile-card__progress-pct">
-                {MOCK_STUDENT_STATS.completedCases} completed
+                {completedCases.length} completed
               </span>
             </div>
           </div>
 
           {/* Stats */}
           <div className="student-dashboard__stats">
-            <StatCard label="Available Cases"  value={MOCK_STUDENT_STATS.availableCases}  icon={Icon.available} accent="blue"  trend={{ dir: 'up', text: '+5 new today' }} />
-            <StatCard label="Reserved Cases"   value={MOCK_STUDENT_STATS.reservedCases}   icon={Icon.reserved}  accent="amber" />
-            <StatCard label="Completed Cases"  value={MOCK_STUDENT_STATS.completedCases}  icon={Icon.completed} accent="green" trend={{ dir: 'up', text: '+2 this week' }} />
+            <StatCard label="Available Cases"  value={caseStatistics.availableCases}  icon={Icon.available} accent="blue" />
+            <StatCard label="Reserved Cases"   value={caseStatistics.reservedCases}   icon={Icon.reserved}  accent="amber" />
+            <StatCard label="Completed Cases"  value={caseStatistics.completedCases}  icon={Icon.completed} accent="green" />
           </div>
 
           <div className="sd-search-row">
@@ -181,17 +312,20 @@ export default function StudentDashboard() {
               ))}
             </div>
             <span className="student-dashboard__case-count">
-              {displayedCases.length} case{displayedCases.length !== 1 ? 's' : ''}
+              {visiblePatients.length} patient{visiblePatients.length !== 1 ? 's' : ''}
             </span>
           </div>
 
           {/* Cases table */}
           <div className="sd-tables-grid">
           <RecentTable
-            title="Cases"
-            columns={CASE_COLUMNS}
-            rows={displayedCases}
-            emptyMessage="No cases match your search or filter."
+            title="Patients"
+            columns={PATIENT_COLUMNS}
+            rows={visiblePatients}
+            emptyMessage="No patients match your search or filter."
+            onRowClick={(patient) => {
+              if (patient.id) navigate(`/student/patients/${patient.id}`);
+            }}
           />
           </div>
         </div>

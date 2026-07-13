@@ -36,12 +36,16 @@ export async function updateCaseNotes(caseId, notes) {
   return response.data;
 }
 
-export async function getReservedCases() {
-  const response = await apiClient.get(API_ENDPOINTS.student.getReservedCases);
+export async function getReservedCases(studentId) {
+  const response = await apiClient.get(API_ENDPOINTS.student.getReservedCases, {
+    params: { studentId },
+  });
   return response.data;
 }
 
-export async function getCompletedCases() {
-  const response = await apiClient.get(API_ENDPOINTS.student.getCompletedCases);
+export async function getCompletedCases(studentId) {
+  const response = await apiClient.get(API_ENDPOINTS.student.getCompletedCases, {
+    params: { studentId },
+  });
   return response.data;
 }

@@ -1,6 +1,7 @@
 .student-dashboard {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 0;
   background: var(--color-surface, #f8fafc);
   overflow-x: hidden;
 }
@@ -10,20 +11,19 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  /* overflow: hidden; */
+  height: 100vh;
+  overflow: hidden;
   margin-left: 260px;
 }
 
 .student-dashboard__content {
   flex: 1;
-  /* padding: 28px 32px; */
   padding: 24px;
-
   display: flex;
   flex-direction: column;
+  min-height: 0;
   gap: 22px;
-  /* overflow-y: auto; */
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* ── Student Profile Card ────────────────────────── */
@@ -158,6 +158,38 @@
   gap: 16px;
 }
 
+.sd-tables-grid {
+  flex: 1;
+  min-height: 0;
+}
+
+.sd-tables-grid .recent-table {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sd-tables-grid .recent-table__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.patient-treatment-indicators {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+}
+
+.patient-treatment-indicator {
+  display: inline-block;
+  width: 4px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--treatment-color);
+}
+
 /* ── Filters row ────────────────────────────────── */
 .student-dashboard__filters-row {
   display: flex;
@@ -211,31 +243,6 @@
   white-space: nowrap;
 }
 
-/* ── Responsive ──────────────────────────────────── */
-/* @media (max-width: 900px) {
-  .student-dashboard__stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .student-profile-card__progress {
-    display: none;
-  }
-}
-
-@media (max-width: 660px) {
-  .student-dashboard {
-    flex-direction: column;
-  }
-  .student-dashboard__content {
-    padding: 18px 16px;
-  }
-  .student-dashboard__stats {
-    grid-template-columns: 1fr 1fr;
-  }
-  .student-profile-card {
-    flex-wrap: wrap;
-  }
-} */
-
 @media (max-width: 1280px) {
   .student-dashboard__stats {
     grid-template-columns: repeat(2, 1fr);
@@ -259,14 +266,6 @@
     padding: 16px;
     gap: 16px;
   }
-
-  /* .sd-welcome {
-    padding: 20px 16px;
-  }
-
-  .sd-welcome__heading {
-    font-size: 1.125rem;
-  } */
 
   .sd-search-row {
     flex-direction: column;

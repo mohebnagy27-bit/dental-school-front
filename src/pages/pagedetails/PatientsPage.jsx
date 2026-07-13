@@ -182,8 +182,6 @@ export default function PatientsPage() {
           pageTitle="Patients"
           user={doctorUser}
           searchValue={search}
-          // onSearchChange={(e) => setSearch(e.target.value)}
-          // onMenuToggle={() => setSidebarOpen((o) => !o)}
           onMenuClick={() => setSidebarOpen(true)}
         />
 

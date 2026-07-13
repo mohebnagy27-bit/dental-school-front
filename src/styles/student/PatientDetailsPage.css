@@ -267,6 +267,10 @@
 .case-card__footer {
   padding-top: 4px;
   border-top: 1px solid #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .case-card__reserve-btn {
@@ -286,6 +290,35 @@
 
 .case-card__reserve-btn:hover  { background: #1A62C4; }
 .case-card__reserve-btn:active { transform: scale(0.97); }
+
+.case-card__note-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #1D6FD8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.case-card__note-btn:hover { color: #1A62C4; text-decoration: underline; }
+
+.pdp-dialog__textarea {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  color: #1E293B;
+  font: inherit;
+}
+
+.pdp-dialog__textarea:focus {
+  outline: 2px solid rgba(29, 111, 216, 0.2);
+  border-color: #1D6FD8;
+}
 
 /* ================================================================
    DIAGNOSIS BADGE
@@ -455,6 +488,12 @@
   background: #F0FDF4;
   border: 1px solid #A7F3D0;
   color: #065F46;
+}
+
+.pdp-toast--error {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #B91C1C;
 }
 
 .pdp-toast__icon { display: flex; align-items: center; flex-shrink: 0; }

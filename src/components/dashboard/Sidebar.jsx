@@ -35,24 +35,6 @@ export default function Sidebar({ role = 'doctor', onLogout, isOpen, onClose }) 
         </svg>
       ),
     },
-    // {
-    //   to: '/reserved-cases',
-    //   label: 'Waiting List',
-    //   icon: (
-    //     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    //       <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-    //     </svg>
-    //   ),
-    // },
-    // {
-    //   to: '/completed-cases',
-    //   label: 'Completed Cases',
-    //   icon: (
-    //     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    //       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
-    //     </svg>
-    //   ),
-    // },
     {
       to: '/doctor/settings',
       label: 'Settings',

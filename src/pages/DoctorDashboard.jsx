@@ -1,30 +1,21 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/dashboard/Sidebar';
 import Topbar from '../components/dashboard/Topbar';
 import StatCard from '../components/dashboard/StatCard';
 import RecentTable from '../components/dashboard/RecentTable';
 import SearchBar from '../components/dashboard/SearchBar';
+import { useAuth } from '../context/AuthContext';
+import { getDashboardStatistics, getPatientsOverview } from '../services/managementService';
+import {
+  filterStudentRecords,
+  getPatientCases,
+  getPatientId,
+  getPatientName,
+  getResponseList,
+} from '../lib/studentData';
 import '../styles/DoctorDashboard.css';
-
-/* ── Mock Data ─────────────────────────────────── */
-const MOCK_STATS = {
-  totalPatients: 148,
-  totalCases: 312,
-  availableCases: 24,
-  reservedCases: 38,
-  completedCases: 250,
-};
-
-const MOCK_PATIENTS = [
-  { id: 1, name: 'Ahmed Hassan',    date: '08 Jun 2026', cases: 3, status: 'active' },
-  { id: 2, name: 'Sara Khaled',     date: '07 Jun 2026', cases: 1, status: 'waiting' },
-  { id: 3, name: 'Mohamed Ali',     date: '06 Jun 2026', cases: 5, status: 'completed' },
-  { id: 4, name: 'Nour Ibrahim',    date: '05 Jun 2026', cases: 2, status: 'reserved' },
-  { id: 5, name: 'Layla Mahmoud',   date: '04 Jun 2026', cases: 4, status: 'completed' },
-  { id: 6, name: 'Omar Farouk',     date: '03 Jun 2026', cases: 1, status: 'waiting' },
-];
-
 
 /* ── Icons ─────────────────────────────────────── */
 const Icon = {
@@ -66,37 +57,116 @@ function StatusBadge({ value }) {
   return <span className={`status-badge status-badge--${value}`}>{value}</span>;
 }
 
+function getDashboardData(response) {
+  const data = response?.data ?? response ?? {};
+  return data?.dashboard ?? data?.statistics ?? data?.stats ?? data;
+}
+
+function getNumericValue(data, keys, fallback = 0) {
+  const value = keys.map((key) => data?.[key]).find((item) => Number.isFinite(Number(item)));
+  return value === undefined ? fallback : Number(value);
+}
+
+function getPatientRegistrationDate(patient) {
+  return patient?.registrationDate || patient?.registeredAt || patient?.createdAt || patient?.dateCreated;
+}
+
+function formatRegistrationDate(date) {
+  if (!date) return '—';
+
+  const parsedDate = new Date(date);
+  return Number.isNaN(parsedDate.getTime())
+    ? String(date)
+    : parsedDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function getPatientStatus(patient) {
+  if (patient?.status) return String(patient.status).toLowerCase();
+
+  const statuses = getPatientCases(patient).map((currentCase) => String(currentCase?.status || '').toLowerCase());
+  if (statuses.includes('available')) return 'active';
+  if (statuses.includes('reserved')) return 'reserved';
+  if (statuses.includes('completed')) return 'completed';
+  return 'waiting';
+}
+
+function calculateCaseStatistics(patients) {
+  return patients.flatMap(getPatientCases).reduce(
+    (statistics, currentCase) => {
+      const status = String(currentCase?.status || '').toUpperCase();
+      statistics.totalCases += 1;
+      if (status === 'AVAILABLE') statistics.availableCases += 1;
+      if (status === 'RESERVED') statistics.reservedCases += 1;
+      if (status === 'COMPLETED') statistics.completedCases += 1;
+      return statistics;
+    },
+    { totalCases: 0, availableCases: 0, reservedCases: 0, completedCases: 0 }
+  );
+}
+
 /* ── Patient table columns ──────────────────────── */
 const PATIENT_COLUMNS = [
   { key: 'name',   label: 'Patient Name' },
   { key: 'date',   label: 'Registration Date' },
-  { key: 'cases',  label: 'No. of Cases', render: (v) => <strong>{v}</strong> },
+  { key: 'caseCount', label: 'No. of Cases', render: (v) => <strong>{v}</strong> },
   { key: 'status', label: 'Status', render: (v) => <StatusBadge value={v} /> },
 ];
 
 /* ── Component ──────────────────────────────────── */
 export default function DoctorDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const filteredPatients = MOCK_PATIENTS.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
+  const { data: dashboardResponse } = useQuery({
+    queryKey: ['management-dashboard'],
+    queryFn: getDashboardStatistics,
+  });
+  const { data: patientsResponse } = useQuery({
+    queryKey: ['management-patients-overview'],
+    queryFn: getPatientsOverview,
+  });
+
+  const patients = useMemo(() => getResponseList(patientsResponse), [patientsResponse]);
+  const patientRows = useMemo(() => patients
+    .map((patient) => ({
+      id: getPatientId(patient),
+      name: getPatientName(patient),
+      date: formatRegistrationDate(getPatientRegistrationDate(patient)),
+      registrationTimestamp: new Date(getPatientRegistrationDate(patient)).getTime() || 0,
+      caseCount: getPatientCases(patient).length,
+      status: getPatientStatus(patient),
+      cases: getPatientCases(patient),
+    }))
+    .sort((firstPatient, secondPatient) => secondPatient.registrationTimestamp - firstPatient.registrationTimestamp),
+    [patients]
   );
+  const caseStatistics = calculateCaseStatistics(patients);
+  const dashboardStatistics = getDashboardData(dashboardResponse);
+  const statistics = {
+    totalPatients: getNumericValue(dashboardStatistics, ['totalPatients', 'patientsCount'], patients.length),
+    totalCases: getNumericValue(dashboardStatistics, ['totalCases', 'casesCount'], caseStatistics.totalCases),
+    availableCases: getNumericValue(dashboardStatistics, ['availableCases', 'availableCasesCount'], caseStatistics.availableCases),
+    reservedCases: getNumericValue(dashboardStatistics, ['reservedCases', 'reservedCasesCount'], caseStatistics.reservedCases),
+    completedCases: getNumericValue(dashboardStatistics, ['completedCases', 'completedCasesCount'], caseStatistics.completedCases),
+  };
+  const filteredPatients = filterStudentRecords(patientRows, search).slice(0, 10);
 
   function handleLogout() {
     navigate('/doctor/login');
   }
 
-  const handleClear = () => {
-    setSearch('');
-    if (onSearch) onSearch('');
-  };
-
   const doctorUser = {
-    name: 'Dr. Ahmed Nasser',
+    name: user?.name || '',
     role: 'Doctor',
-    initials: 'AN',
+    initials: user?.name
+      ?.split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase(),
   };
 
   return (
@@ -120,7 +190,7 @@ export default function DoctorDashboard() {
           <div className="doctor-dashboard__welcome">
             <div>
               <h2 className="doctor-dashboard__welcome-title">
-                Good morning, Dr. Nasser 👋
+                Good morning, {doctorUser.name || 'Doctor'} 👋
               </h2>
               <p className="doctor-dashboard__welcome-sub">
                 Here's what's happening in your clinic today.
@@ -135,11 +205,11 @@ export default function DoctorDashboard() {
 
           {/* Stats */}
           <div className="doctor-dashboard__stats">
-            <StatCard label="Total Patients"   value={MOCK_STATS.totalPatients}   icon={Icon.users}    accent="navy"  trend={{ dir: 'up', text: '+12 this month' }} />
-            <StatCard label="Total Cases"      value={MOCK_STATS.totalCases}      icon={Icon.folder}   accent="blue"  trend={{ dir: 'up', text: '+8 this week' }} />
-            <StatCard label="Available Cases"    value={MOCK_STATS.availableCases}    icon={Icon.clock}    accent="amber" />
-            <StatCard label="Reserved Cases"   value={MOCK_STATS.reservedCases}   icon={Icon.bookmark} accent="rose"  />
-            <StatCard label="Completed Cases"  value={MOCK_STATS.completedCases}  icon={Icon.check}    accent="green" trend={{ dir: 'up', text: '+5 today' }} />
+            <StatCard label="Total Patients"   value={statistics.totalPatients}   icon={Icon.users}    accent="navy" />
+            <StatCard label="Total Cases"      value={statistics.totalCases}      icon={Icon.folder}   accent="blue" />
+            <StatCard label="Available Cases"  value={statistics.availableCases}  icon={Icon.clock}    accent="amber" />
+            <StatCard label="Reserved Cases"   value={statistics.reservedCases}   icon={Icon.bookmark} accent="rose" />
+            <StatCard label="Completed Cases"  value={statistics.completedCases}  icon={Icon.check}    accent="green" />
           </div>
 
           {/*Search */}
@@ -161,6 +231,9 @@ export default function DoctorDashboard() {
                 columns={PATIENT_COLUMNS}
                 rows={filteredPatients}
                 emptyMessage="No patients match your search."
+                onRowClick={(patient) => {
+                  if (patient.id) navigate(`/doctor/patients/${patient.id}`);
+                }}
               />
             </div>
           </div>

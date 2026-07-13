@@ -87,7 +87,7 @@ export default function DoctorLoginPage() {
  
       // Backend returns: { message, token, user: { id, name, email, role } }
       if (data.user.role === 'SUPER_ADMIN') {
-      navigate('/admin/dashboard');
+      navigate('/doctor/dashboard');
       } else if (data.user.role === 'DOCTOR') {
       navigate('/doctor/dashboard');
       }

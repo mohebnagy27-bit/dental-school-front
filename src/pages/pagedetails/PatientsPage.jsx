@@ -14,16 +14,9 @@ const PAGE_SIZE = 6;
 
 const STATUS_OPTIONS = [
   { value: 'all',       label: 'All Statuses' },
-  { value: 'active',    label: 'Active' },
-  { value: 'waiting',   label: 'Waiting' },
+  { value: 'available',    label: 'Available' },
   { value: 'reserved',  label: 'Reserved' },
   { value: 'completed', label: 'Completed' },
-];
-
-const SORT_OPTIONS = [
-  { value: 'newest', label: 'Newest First' },
-  { value: 'oldest', label: 'Oldest First' },
-  { value: 'name',   label: 'Name (A–Z)' },
 ];
 
 function StatusBadge({ value }) {
@@ -194,14 +187,6 @@ export default function PatientsPage() {
                 Manage your clinic&apos;s registered patients and their cases.
               </p>
             </div>
-            <div className="page-header__actions">
-              <button
-                className="btn btn--primary"
-                onClick={() => navigate('/doctor/new-patient')}
-              >
-                + New Patient
-              </button>
-            </div>
           </div>
 
           {/* Toolbar: search + filters */}
@@ -219,12 +204,6 @@ export default function PatientsPage() {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 options={STATUS_OPTIONS}
-              />
-              <FilterSelect
-                label="Sort"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                options={SORT_OPTIONS}
               />
             </div>
           </div>

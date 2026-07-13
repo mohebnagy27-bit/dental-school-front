@@ -6,7 +6,7 @@ import '../../styles/Sidebar.css';
 
 export default function Sidebar({ role = 'doctor', isOpen, onClose }) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, role: authenticatedRole } = useAuth();
   const doctorLinks = [
     {
       to: '/doctor/dashboard',
@@ -38,8 +38,8 @@ export default function Sidebar({ role = 'doctor', isOpen, onClose }) {
         </svg>
       ),
     },
-    {
-      to: '/doctor/settings',
+    ...(authenticatedRole === 'SUPER_ADMIN' ? [{
+      to: '/admin/settings',
       label: 'Settings',
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -48,7 +48,7 @@ export default function Sidebar({ role = 'doctor', isOpen, onClose }) {
           <path d="M12 2v2M12 20v2M2 12h2M20 12h2" />
         </svg>
       ),
-    },
+    }] : []),
   ];
 
   const studentLinks = [

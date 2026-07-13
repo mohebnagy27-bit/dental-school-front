@@ -10,3 +10,8 @@ export async function getDashboardStatistics() {
   const response = await apiClient.get(API_ENDPOINTS.management.dashboard);
   return response.data;
 }
+
+export async function getPatientDetails(patientId) {
+  const response = await apiClient.get(API_ENDPOINTS.management.patientDetails(patientId));
+  return response.data;
+}

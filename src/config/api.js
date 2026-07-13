@@ -55,5 +55,6 @@ export const API_ENDPOINTS = {
   management: {
     patientsOverview: `${API_BASE_URL}/api/management/patients`,
     dashboard:        `${API_BASE_URL}/api/management/dashboard`,
+    patientDetails: (patientId) => `${API_BASE_URL}/api/management/patients/${patientId}`,
   },
 };

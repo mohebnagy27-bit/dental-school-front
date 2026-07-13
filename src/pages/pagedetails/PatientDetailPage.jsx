@@ -95,20 +95,6 @@ export default function PatientDetailPage() {
                 </p>
               </div>
 
-               {/* ── Dental Chart ── */}
-                        {/* <section className="pdp__section">
-                          <div className="pdp__section-header">
-                            <h2 className="pdp__section-title">Dental Overview</h2>
-                            <span className="pdp__section-badge">{cases.length} {cases.length === 1 ? 'case' : 'cases'}</span>
-                          </div>
-                          <div className="pdp__section-body">
-                            <PatientDentalChart
-                              cases={cases}
-                              onToothClick={handleToothClick}
-                            />
-                          </div>
-                        </section> */}
-
               {/* Patient Information */}
               <div className="section-card">
                 <h3 className="section-card__title">Patient Information</h3>

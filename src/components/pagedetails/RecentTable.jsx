@@ -7,6 +7,7 @@ export default function RecentTable({
   emptyMessage = 'No data available.',
   loading = false,
   loadingRows = 5,
+  onRowClick,
 }) {
   return (
     <div className="recent-table">
@@ -39,7 +40,19 @@ export default function RecentTable({
               </tr>
             ) : (
               rows.map((row, i) => (
-                <tr key={i} className="recent-table__row">
+                <tr
+                  key={row.id ?? i}
+                  className={`recent-table__row${onRowClick ? ' recent-table__row--clickable' : ''}`}
+                  onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  onKeyDown={onRowClick ? (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      onRowClick(row);
+                    }
+                  } : undefined}
+                  role={onRowClick ? 'button' : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
+                >
                   {columns.map((col) => (
                     <td key={col.key} className="recent-table__td">
                       {col.render ? col.render(row[col.key], row) : row[col.key]}

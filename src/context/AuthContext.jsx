@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 const AuthContext = createContext(null)
 
@@ -6,6 +6,34 @@ const TOKEN_KEY = 'token'
 const ROLE_KEY = 'role'
 const USER_ID_KEY = 'userId'
 const USER_NAME_KEY = 'userName'
+const STUDENT_SESSION_KEY = 'df_student_id'
+
+function clearAuthenticationStorage() {
+  localStorage.removeItem(TOKEN_KEY)
+  localStorage.removeItem(ROLE_KEY)
+  localStorage.removeItem(USER_ID_KEY)
+  localStorage.removeItem(USER_NAME_KEY)
+  sessionStorage.removeItem(STUDENT_SESSION_KEY)
+}
+
+function isValidToken(token) {
+  if (!token || typeof token !== 'string') return false
+
+  try {
+    const payload = token.split('.')[1]
+    if (!payload) return false
+
+    const normalizedPayload = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const decodedPayload = JSON.parse(
+      atob(normalizedPayload.padEnd(normalizedPayload.length + ((4 - normalizedPayload.length % 4) % 4), '='))
+    )
+
+    return typeof decodedPayload.exp === 'number'
+      && decodedPayload.exp * 1000 > Date.now()
+  } catch {
+    return false
+  }
+}
 
 function getStoredSession() {
   const token = localStorage.getItem(TOKEN_KEY)
@@ -13,17 +41,18 @@ function getStoredSession() {
   const id = localStorage.getItem(USER_ID_KEY)
   const name = localStorage.getItem(USER_NAME_KEY)
 
-  return {
-    token,
-    role,
-    user: token && id ? { id, name, role } : null,
+  if (!isValidToken(token) || !role || !id) {
+    clearAuthenticationStorage()
+    return { token: null, role: null, user: null }
   }
+
+  return { token, role, user: { id, name, role } }
 }
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(getStoredSession)
 
-  const login = ({ token, user, role = user?.role }) => {
+  const login = useCallback(({ token, user, role = user?.role }) => {
     const authenticatedUser = { ...user, role }
 
     localStorage.setItem(TOKEN_KEY, token)
@@ -32,15 +61,17 @@ export function AuthProvider({ children }) {
     localStorage.setItem(USER_NAME_KEY, user.name)
 
     setSession({ token, role, user: authenticatedUser })
-  }
+  }, [])
 
-  const logout = () => {
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(ROLE_KEY)
-    localStorage.removeItem(USER_ID_KEY)
-    localStorage.removeItem(USER_NAME_KEY)
+  const logout = useCallback(() => {
+    clearAuthenticationStorage()
     setSession({ token: null, role: null, user: null })
-  }
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('auth:logout', logout)
+    return () => window.removeEventListener('auth:logout', logout)
+  }, [logout])
 
   const value = useMemo(() => ({
     user: session.user,
@@ -48,7 +79,7 @@ export function AuthProvider({ children }) {
     role: session.role,
     login,
     logout,
-    isAuthenticated: Boolean(session.token),
+    isAuthenticated: Boolean(session.token && session.user),
   }), [session])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

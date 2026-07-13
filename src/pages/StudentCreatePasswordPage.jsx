@@ -79,7 +79,7 @@ export default function StudentCreatePasswordPage() {
       /* Brief success pause before navigating to dashboard */
       setTimeout(() => navigate('/student/dashboard'), 1600)
 
-    } catch (error) { setApiError( error.response?.data?.message || 'Network error. Please check your connection and try again.')
+    } catch (error) { setApiError(error.response?.data?.message || error.userMessage || 'Network error. Please check your connection and try again.')
     }
   }
 

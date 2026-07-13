@@ -21,18 +21,18 @@ export async function bookCase(caseId) {
   return response.data;
 }
 
-export async function unreserveCase(caseId) {
-  const response = await apiClient.patch(API_ENDPOINTS.student.unreserveCase(caseId));
+export async function unreserveCase(studentId, caseId) {
+  const response = await apiClient.patch(API_ENDPOINTS.student.unreserveCase(caseId), { studentId });
   return response.data;
 }
 
-export async function completeCase(caseId) {
-  const response = await apiClient.patch(API_ENDPOINTS.student.completeCase(caseId));
+export async function completeCase(studentId, caseId) {
+  const response = await apiClient.patch(API_ENDPOINTS.student.completeCase(caseId), { studentId });
   return response.data;
 }
 
-export async function updateCaseNotes(caseId, notes) {
-  const response = await apiClient.patch(API_ENDPOINTS.student.updateNotes(caseId), { notes });
+export async function updateCaseNotes(studentId, caseId, notes) {
+  const response = await apiClient.patch(API_ENDPOINTS.student.updateNotes(caseId), { studentId, notes });
   return response.data;
 }
 

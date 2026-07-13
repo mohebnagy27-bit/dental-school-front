@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { getTreatmentColor } from '../../lib/studentData';
 import '../../styles/student/PatientDentalChart.css';
 
 /* ================================================================
@@ -24,18 +25,6 @@ const SHAPES = {
 
 const UPPER = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
 const LOWER = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
-
-const DIAG_COLORS = {
-  caries:         '#3B82F6',
-  extraction:     '#EF4444',
-  remaining_root: '#F97316',
-};
-
-const LEGEND_ITEMS = [
-  { type: 'caries',         label: 'Caries',         color: '#3B82F6' },
-  { type: 'extraction',     label: 'Extraction',     color: '#EF4444' },
-  { type: 'remaining_root', label: 'Remaining Root', color: '#F97316' },
-];
 
 /* ================================================================
    ReadOnlyTooth
@@ -126,21 +115,21 @@ export default function PatientDentalChart({ cases = [], onToothClick }) {
     return map;
   }, [cases]);
 
-  /* Build lookup: tooth → hex color */
+  /* Build lookup: tooth → shared treatment color */
   const toothColorMap = useMemo(() => {
     const map = {};
     cases.forEach((c) => {
-      if (c.tooth != null && c.diagnosis) {
-        map[c.tooth] = DIAG_COLORS[c.diagnosis] || '#6B7280';
+      if (c.tooth != null && c.treatment) {
+        map[c.tooth] = getTreatmentColor(c.treatment);
       }
     });
     return map;
   }, [cases]);
 
   /* Which legend items are actually present */
-  const presentTypes = useMemo(() => {
-    const set = new Set(cases.map((c) => c.diagnosis));
-    return LEGEND_ITEMS.filter((l) => set.has(l.type));
+  const presentTreatments = useMemo(() => {
+    const treatments = [...new Set(cases.map((c) => c.treatment).filter(Boolean))];
+    return treatments.map((treatment) => ({ label: treatment, color: getTreatmentColor(treatment) }));
   }, [cases]);
 
   /* Fixed-position tooltip */
@@ -187,12 +176,12 @@ export default function PatientDentalChart({ cases = [], onToothClick }) {
   return (
     <div className="pdc">
       {/* Legend */}
-      {presentTypes.length > 0 && (
+      {presentTreatments.length > 0 && (
         <div className="pdc__legend">
-          {presentTypes.map((l) => (
-            <div key={l.type} className="pdc__legend-item">
-              <span className="pdc__legend-dot" style={{ background: l.color }} />
-              <span>{l.label}</span>
+          {presentTreatments.map((treatment) => (
+            <div key={treatment.label} className="pdc__legend-item">
+              <span className="pdc__legend-dot" style={{ background: treatment.color }} />
+              <span>{treatment.label}</span>
             </div>
           ))}
           <div className="pdc__legend-item pdc__legend-item--healthy">

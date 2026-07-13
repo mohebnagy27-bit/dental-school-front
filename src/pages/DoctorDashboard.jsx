@@ -11,7 +11,7 @@ import '../styles/DoctorDashboard.css';
 const MOCK_STATS = {
   totalPatients: 148,
   totalCases: 312,
-  waitingCases: 24,
+  availableCases: 24,
   reservedCases: 38,
   completedCases: 250,
 };
@@ -25,14 +25,6 @@ const MOCK_PATIENTS = [
   { id: 6, name: 'Omar Farouk',     date: '03 Jun 2026', cases: 1, status: 'waiting' },
 ];
 
-const MOCK_ACTIVITY = [
-  { id: 1, type: 'register', text: 'New patient Ahmed Hassan registered', time: '5 min ago' },
-  { id: 2, type: 'complete', text: 'Case #204 marked as completed by Dr. Rania', time: '22 min ago' },
-  { id: 3, type: 'reserve',  text: 'Sara Khaled reserved case #198', time: '1 hr ago' },
-  { id: 4, type: 'register', text: 'New patient Omar Farouk registered', time: '2 hrs ago' },
-  { id: 5, type: 'complete', text: 'Case #191 marked as completed by Dr. Samir', time: '3 hrs ago' },
-  { id: 6, type: 'reserve',  text: 'Nour Ibrahim reserved case #187', time: '5 hrs ago' },
-];
 
 /* ── Icons ─────────────────────────────────────── */
 const Icon = {
@@ -68,20 +60,6 @@ const Icon = {
   ),
 };
 
-/* ── Activity icon map ──────────────────────────── */
-function ActivityIcon({ type }) {
-  const map = {
-    register: { bg: '#dbeafe', color: '#2563eb', icon: '👤' },
-    complete:  { bg: '#dcfce7', color: '#16a34a', icon: '✓' },
-    reserve:   { bg: '#ede9fe', color: '#7c3aed', icon: '📋' },
-  };
-  const { bg, color, icon } = map[type] || map.register;
-  return (
-    <span className="activity__icon" style={{ background: bg, color }}>
-      {icon}
-    </span>
-  );
-}
 
 /* ── Status badge renderer ──────────────────────── */
 function StatusBadge({ value }) {
@@ -159,7 +137,7 @@ export default function DoctorDashboard() {
           <div className="doctor-dashboard__stats">
             <StatCard label="Total Patients"   value={MOCK_STATS.totalPatients}   icon={Icon.users}    accent="navy"  trend={{ dir: 'up', text: '+12 this month' }} />
             <StatCard label="Total Cases"      value={MOCK_STATS.totalCases}      icon={Icon.folder}   accent="blue"  trend={{ dir: 'up', text: '+8 this week' }} />
-            <StatCard label="Waiting Cases"    value={MOCK_STATS.waitingCases}    icon={Icon.clock}    accent="amber" />
+            <StatCard label="Available Cases"    value={MOCK_STATS.availableCases}    icon={Icon.clock}    accent="amber" />
             <StatCard label="Reserved Cases"   value={MOCK_STATS.reservedCases}   icon={Icon.bookmark} accent="rose"  />
             <StatCard label="Completed Cases"  value={MOCK_STATS.completedCases}  icon={Icon.check}    accent="green" trend={{ dir: 'up', text: '+5 today' }} />
           </div>
@@ -184,24 +162,6 @@ export default function DoctorDashboard() {
                 rows={filteredPatients}
                 emptyMessage="No patients match your search."
               />
-            </div>
-
-            {/* Activity feed */}
-            <div className="doctor-dashboard__activity-col">
-              <div className="activity-feed">
-                <h3 className="activity-feed__title">Recent Activity</h3>
-                <ul className="activity-feed__list">
-                  {MOCK_ACTIVITY.map((item) => (
-                    <li key={item.id} className="activity__item">
-                      <ActivityIcon type={item.type} />
-                      <div className="activity__body">
-                        <p className="activity__text">{item.text}</p>
-                        <span className="activity__time">{item.time}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
           </div>
         </div>

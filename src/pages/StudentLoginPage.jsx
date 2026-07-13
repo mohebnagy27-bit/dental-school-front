@@ -91,7 +91,7 @@ export default function StudentLoginPage() {
     }
 
     } catch (error) {
-      setApiError(error.response?.data?.message || 'Network error. Please check your connection and try again.')
+      setApiError(error.response?.data?.message || error.userMessage || 'Network error. Please check your connection and try again.')
       triggerShake()
     }
   }

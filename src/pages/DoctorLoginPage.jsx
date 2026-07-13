@@ -92,7 +92,7 @@ export default function DoctorLoginPage() {
       navigate('/doctor/dashboard');
       }
     } catch (error) {
-      setApiError(error.response?.data?.message || 'An unexpected error occurred. Please try again.')
+      setApiError(error.response?.data?.message || error.userMessage || 'An unexpected error occurred. Please try again.')
       triggerShake()
     }
   }

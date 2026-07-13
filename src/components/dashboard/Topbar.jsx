@@ -28,7 +28,7 @@ export default function Topbar({ pageTitle, user, onMenuClick }) {
           </div>
           <div className="topbar__profile-info">
             <span className="topbar__profile-name">{user?.name || 'Dr. User'}</span>
-            <span className="topbar__profile-role">{user?.role || 'Doctor'}</span>
+            <span className="topbar__profile-role">{user?.id || user?.role || 'Doctor'}</span>
           </div>
         </div>
       </div>

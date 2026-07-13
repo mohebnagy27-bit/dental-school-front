@@ -12,6 +12,7 @@ import {
   unreserveCase,
   updateCaseNotes,
 } from '../../services/studentService';
+import { getStudentProfile } from '../../lib/studentData';
 import '../../styles/student/PatientDetailsPage.css';
 
 const valueOr = (...values) => values.find((value) => value !== undefined && value !== null && value !== '');
@@ -241,13 +242,13 @@ const CaseCard = React.forwardRef(function CaseCard(
   );
 });
 
-function PatientDetailsContent({ children, sidebarOpen, setSidebarOpen }) {
+function PatientDetailsContent({ children, sidebarOpen, setSidebarOpen, studentProfile }) {
   return (
     <div className="dashboard-layout">
       <Sidebar role="student" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
       <div className="dashboard-main">
-        <Topbar onMenuClick={() => setSidebarOpen(true)} />
+        <Topbar pageTitle="Patient Details" user={studentProfile} onMenuClick={() => setSidebarOpen(true)} />
         <main className="dashboard-content pdp">{children}</main>
       </div>
     </div>
@@ -268,6 +269,7 @@ export default function PatientDetailsPage() {
   const notificationTimer = useRef(null);
   const caseRefs = useRef({});
   const studentId = user?.id || localStorage.getItem('userId');
+  const studentProfile = getStudentProfile(user, studentId);
   const patientQueryKey = ['student-patient-details', id];
 
   const { data, isLoading, isError, error } = useQuery({
@@ -282,6 +284,15 @@ export default function PatientDetailsPage() {
     [patientQueryKey, queryClient],
   );
 
+  const refreshStudentCaseQueries = useCallback(
+    () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['student-cases'] }),
+      queryClient.invalidateQueries({ queryKey: ['student-reserved-cases', studentId] }),
+      queryClient.invalidateQueries({ queryKey: ['student-completed-cases', studentId] }),
+    ]),
+    [queryClient, studentId],
+  );
+
   const showNotification = useCallback((type, message) => {
     clearTimeout(notificationTimer.current);
     setNotification({ type, message });
@@ -291,16 +302,16 @@ export default function PatientDetailsPage() {
   const reserveMutation = useMutation({
     mutationFn: (caseInfo) => bookCase(caseInfo.id),
     onSuccess: async (result, caseInfo) => {
-      await refreshPatientDetails();
+      await Promise.all([refreshPatientDetails(), refreshStudentCaseQueries()]);
       showNotification('success', `Case for Tooth ${caseInfo.tooth} reserved successfully.`);
     },
     onError: () => showNotification('error', 'Unable to reserve this case. Please try again.'),
   });
 
   const completeMutation = useMutation({
-    mutationFn: (caseInfo) => completeCase(caseInfo.id),
+    mutationFn: (caseInfo) => completeCase(studentId, caseInfo.id),
     onSuccess: async (result, caseInfo) => {
-      await refreshPatientDetails();
+      await Promise.all([refreshPatientDetails(), refreshStudentCaseQueries()]);
       setStatusTarget(null);
       showNotification('success', `Case for Tooth ${caseInfo.tooth} marked as completed.`);
     },
@@ -308,9 +319,9 @@ export default function PatientDetailsPage() {
   });
 
   const unreserveMutation = useMutation({
-    mutationFn: (caseInfo) => unreserveCase(caseInfo.id),
+    mutationFn: (caseInfo) => unreserveCase(studentId, caseInfo.id),
     onSuccess: async (result, caseInfo) => {
-      await refreshPatientDetails();
+      await Promise.all([refreshPatientDetails(), refreshStudentCaseQueries()]);
       setStatusTarget(null);
       showNotification('success', `Reservation for Tooth ${caseInfo.tooth} cancelled.`);
     },
@@ -318,7 +329,7 @@ export default function PatientDetailsPage() {
   });
 
   const notesMutation = useMutation({
-    mutationFn: ({ caseInfo, notes }) => updateCaseNotes(caseInfo.id, notes),
+    mutationFn: ({ caseInfo, notes }) => updateCaseNotes(studentId, caseInfo.id, notes),
     onSuccess: async (result, { caseInfo }) => {
       await refreshPatientDetails();
       setNotesTarget(null);
@@ -356,14 +367,14 @@ export default function PatientDetailsPage() {
   }, [cases]);
 
   if (isLoading) {
-    return <PatientDetailsContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}><p className="pdp__not-found">Loading patient details…</p></PatientDetailsContent>;
+    return <PatientDetailsContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} studentProfile={studentProfile}><p className="pdp__not-found">Loading patient details…</p></PatientDetailsContent>;
   }
 
   if (isError || !patient) {
     const message = error?.response?.status === 404 || !patient
       ? 'Patient not found.'
       : 'Unable to load patient details. Please try again.';
-    return <PatientDetailsContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}><p className="pdp__not-found">{message}</p></PatientDetailsContent>;
+    return <PatientDetailsContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} studentProfile={studentProfile}><p className="pdp__not-found">{message}</p></PatientDetailsContent>;
   }
 
   const patientName = getPatientName(patient);
@@ -374,7 +385,7 @@ export default function PatientDetailsPage() {
   const isStatusPending = completeMutation.isPending || unreserveMutation.isPending;
 
   return (
-    <PatientDetailsContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
+    <PatientDetailsContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} studentProfile={studentProfile}>
       <div className="pdp__header">
         <button type="button" className="pdp__back-btn" onClick={() => navigate(-1)} aria-label="Go back">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">

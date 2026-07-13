@@ -1,9 +1,12 @@
 import { useEffect } from 'react';
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/Sidebar.css';
 
-export default function Sidebar({ role = 'doctor', onLogout, isOpen, onClose }) {
+export default function Sidebar({ role = 'doctor', isOpen, onClose }) {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const doctorLinks = [
     {
       to: '/doctor/dashboard',
@@ -101,8 +104,14 @@ export default function Sidebar({ role = 'doctor', onLogout, isOpen, onClose }) 
       return () => document.body.classList.remove('sidebar-open');
     }, [isOpen]);
 
-    const handleNavClick = () => {
+  const handleNavClick = () => {
     if (onClose) onClose();   // auto-close on mobile
+  };
+
+  const handleLogout = () => {
+    onClose?.();
+    logout();
+    navigate('/', { replace: true });
   };
 
   return (
@@ -151,7 +160,7 @@ export default function Sidebar({ role = 'doctor', onLogout, isOpen, onClose }) 
 
       {/* Logout */}
       <div className="sidebar__footer">
-        <button className="sidebar__logout" onClick={onLogout}>
+        <button className="sidebar__logout" onClick={handleLogout}>
           <span className="sidebar__link-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

@@ -13,17 +13,17 @@ import {
   getReservedCases,
 } from '../services/studentService';
 import { useAuth } from '../context/AuthContext';
+import {
+  filterStudentRecords,
+  getCaseTreatment,
+  getPatientId,
+  getPatientCases,
+  getPatientName,
+  getResponseList,
+  getStudentProfile,
+  getTreatmentColor,
+} from '../lib/studentData';
 import '../styles/StudentDashboard.css';
-
-function getCaseList(response) {
-  if (Array.isArray(response)) return response;
-  return response?.cases || response?.data || [];
-}
-
-function getPatientList(response) {
-  if (Array.isArray(response)) return response;
-  return response?.patients || response?.data || [];
-}
 
 function calculateCaseStatistics(cases) {
   return cases.reduce(
@@ -40,63 +40,12 @@ function calculateCaseStatistics(cases) {
   );
 }
 
-const TREATMENT_TYPE_COLORS = {
-  caries: '#2563eb',
-  'root canal treatment': '#f59e0b',
-  extraction: '#dc2626',
-  'crown restoration': '#7c3aed',
-  'pulp capping': '#0891b2',
-  'fixed partial denture': '#db2777',
-  'scaling & root planing': '#16a34a',
-};
-
-function getPatientCases(patient) {
-  const cases = patient.cases || patient.patientCases || [];
-  return Array.isArray(cases) ? cases : [];
-}
-
-function getPatientName(patient) {
-  if (patient.name || patient.fullName) return patient.name || patient.fullName;
-
-  return [patient.firstName, patient.lastName].filter(Boolean).join(' ') || '—';
-}
-
 function getTreatmentTypes(patient) {
   const treatments = getPatientCases(patient)
-    .map((currentCase) => currentCase.treatmentType || currentCase.treatment?.type || currentCase.treatment)
+    .map(getCaseTreatment)
     .filter((treatment) => typeof treatment === 'string' && treatment.trim());
 
   return [...new Set(treatments)];
-}
-
-function getTreatmentColor(treatment) {
-  return TREATMENT_TYPE_COLORS[treatment.toLowerCase()] || '#64748b';
-}
-
-function getPatientSearchValues(patient, treatmentTypes) {
-  const caseValues = getPatientCases(patient).flatMap((currentCase) => [
-    currentCase.treatmentType,
-    currentCase.treatment?.type,
-    currentCase.problem,
-    currentCase.diagnosis,
-    currentCase.toothNumber,
-    currentCase.tooth,
-  ]);
-
-  return [getPatientName(patient), ...treatmentTypes, ...caseValues]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
-}
-
-function getInitials(name) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase();
 }
 
 /* ── Stat icons ─────────────────────────────────── */
@@ -145,20 +94,11 @@ const PATIENT_COLUMNS = [
   { key: 'phoneNumber', label: 'Phone Number' },
 ];
 
-/* ── Filter options ─────────────────────────────── */
-const FILTERS = [
-  { key: 'all',       label: 'All' },
-  { key: 'newest',    label: 'Newest' },
-  { key: 'oldest',    label: 'Oldest' },
-  { key: 'available', label: 'Available Only' },
-];
-
 /* ── Component ──────────────────────────────────── */
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('all');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const studentId = localStorage.getItem('userId');
 
@@ -181,57 +121,30 @@ export default function StudentDashboard() {
     queryFn: getPatients,
   });
 
-  const caseStatistics = calculateCaseStatistics(getCaseList(allCasesResponse));
-  const reservedCases = getCaseList(reservedCasesResponse);
-  const completedCases = getCaseList(completedCasesResponse);
+  const caseStatistics = calculateCaseStatistics(getResponseList(allCasesResponse));
+  const reservedCases = getResponseList(reservedCasesResponse);
+  const completedCases = getResponseList(completedCasesResponse);
   const assignedCasesCount = reservedCases.length + completedCases.length;
   const progressPercentage = assignedCasesCount
     ? Math.round((completedCases.length / assignedCasesCount) * 100)
     : 0;
-  const studentName = user?.name || '';
-  const studentProfile = {
-    name: studentName,
-    id: user?.id || studentId || '',
-    phoneNumber: user?.phone || user?.phoneNumber || '',
-    initials: getInitials(studentName),
-  };
+  const studentProfile = getStudentProfile(user, studentId);
   const patientRows = useMemo(
-    () => getPatientList(patientsResponse).map((patient) => {
+    () => getResponseList(patientsResponse).map((patient) => {
       const treatmentTypes = getTreatmentTypes(patient);
 
       return {
-        id: patient.id || patient._id,
+        id: getPatientId(patient),
         patientName: getPatientName(patient),
         phoneNumber: patient.phone || patient.phoneNumber || '—',
         treatmentTypes,
-        searchValues: getPatientSearchValues(patient, treatmentTypes),
         cases: getPatientCases(patient),
       };
     }),
     [patientsResponse]
   );
 
-  function handleLogout() {
-    navigate('/student/login');
-  }
-
-  /* Apply filter + search to the loaded patient data */
-  let displayedPatients = [...patientRows];
-
-  if (filter === 'available') {
-    displayedPatients = displayedPatients.filter((patient) =>
-      patient.cases.some((currentCase) => currentCase.status?.toUpperCase() === 'AVAILABLE')
-    );
-  } else if (filter === 'oldest') {
-    displayedPatients = displayedPatients.reverse();
-  }
-
-  if (search.trim()) {
-    const query = search.trim().toLowerCase();
-    displayedPatients = displayedPatients.filter((patient) => patient.searchValues.includes(query));
-  }
-
-  const visiblePatients = displayedPatients.slice(0, 10);
+  const visiblePatients = filterStudentRecords(patientRows, search).slice(0, 10);
 
   const handleClear = () => {
     setSearch('');
@@ -241,7 +154,6 @@ export default function StudentDashboard() {
   return (
     <div className="student-dashboard">
       <Sidebar role="student" 
-      onLogout={handleLogout}
       isOpen={sidebarOpen}
       onClose={() => setSidebarOpen(false)}
       />
@@ -296,24 +208,6 @@ export default function StudentDashboard() {
             onChange={(e) => setSearch(e.target.value)}
             onClear={handleClear}
             />
-          </div>
-          
-          {/* Filters row */}
-          <div className="student-dashboard__filters-row">
-            <div className="student-dashboard__filter-tabs">
-              {FILTERS.map((f) => (
-                <button
-                  key={f.key}
-                  className={`filter-tab${filter === f.key ? ' filter-tab--active' : ''}`}
-                  onClick={() => setFilter(f.key)}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-            <span className="student-dashboard__case-count">
-              {visiblePatients.length} patient{visiblePatients.length !== 1 ? 's' : ''}
-            </span>
           </div>
 
           {/* Cases table */}

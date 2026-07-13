@@ -1,11 +1,11 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Link, Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 import LandingPage                from '../pages/LandingPage'
 import DoctorLoginPage            from '../pages/DoctorLoginPage'
 import StudentLoginPage           from '../pages/StudentLoginPage'
 import StudentCreatePasswordPage  from '../pages/StudentCreatePasswordPage'
 import StudentPasswordPage        from '../pages/StudentPasswordPage'
-// import DashboardPlaceholder       from '../pages/DashboardPlaceholder'
 import DoctorDashboard            from '../pages/DoctorDashboard'
 import StudentDashboard           from '../pages/StudentDashboard'
 
@@ -19,6 +19,19 @@ import PatientRegistrationPage from '../pages/pagedetails/PatientRegistrationPag
 import StudentProfilePage from '../pages/student/StudentProfilePage'
 
 import SettingsPage from '../pages/SettingsPage'
+
+function ProtectedRoute({ children }) {
+  const { isAuthenticated } = useAuth()
+
+  if (isAuthenticated) return children
+
+  return (
+    <main className="protected-route-message">
+      <p>Please login first.</p>
+      <Link to="/">Login first</Link>
+    </main>
+  )
+}
 
 
 /**
@@ -56,19 +69,19 @@ export function AppRoutes() {
       {/* ── 404 fallback ───────────────────────────────── */}
       <Route path="*" element={<Navigate to="/" replace />} />
 
-      <Route path="/doctor/dashboard"  element={<DoctorDashboard />} />
-      <Route path="/student/dashboard" element={<StudentDashboard />} />
+      <Route path="/doctor/dashboard"  element={<ProtectedRoute><DoctorDashboard /></ProtectedRoute>} />
+      <Route path="/student/dashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
 
-      <Route path="/doctor/patients"          element={<PatientsPage />} />
-      <Route path="/doctor/patients/:id"      element={<PatientDetailPage />} />
-      <Route path="/student/reserved-cases"    element={<ReservedCasesPage />} />
-      <Route path="/student/completed-cases"   element={<CompletedCasesPage />} />
+      <Route path="/doctor/patients"          element={<ProtectedRoute><PatientsPage /></ProtectedRoute>} />
+      <Route path="/doctor/patients/:id"      element={<ProtectedRoute><PatientDetailPage /></ProtectedRoute>} />
+      <Route path="/student/reserved-cases"    element={<ProtectedRoute><ReservedCasesPage /></ProtectedRoute>} />
+      <Route path="/student/completed-cases"   element={<ProtectedRoute><CompletedCasesPage /></ProtectedRoute>} />
 
-      <Route path="/doctor/new-patient" element={<PatientRegistrationPage />} />
+      <Route path="/doctor/new-patient" element={<ProtectedRoute><PatientRegistrationPage /></ProtectedRoute>} />
 
-      <Route path="/student/patients/:id"  element={<PatientDetailsPage />} />
-      <Route path="/student/profile"      element={<StudentProfilePage />} />
-      <Route path="/admin/settings" element={<SettingsPage />} />
+      <Route path="/student/patients/:id"  element={<ProtectedRoute><PatientDetailsPage /></ProtectedRoute>} />
+      <Route path="/student/profile"      element={<ProtectedRoute><StudentProfilePage /></ProtectedRoute>} />
+      <Route path="/admin/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
     </Routes>
   )

@@ -76,7 +76,7 @@ export default function StudentPasswordPage() {
       navigate('/student/dashboard');
     } catch (error) {
       setApiError(
-      error.response?.data?.message || 'Network error. Please check your connection and try again.')
+      error.response?.data?.message || error.userMessage || 'Network error. Please check your connection and try again.')
       triggerShake()
     }
   }

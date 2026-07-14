@@ -8,29 +8,23 @@ import ReactivateDoctorCard from './ReactivateDoctorCard';
  * Composes the three doctor-management action cards in order.
  *
  * Props:
- *   getDoctor          - (id: string) => doctor | null  (memoized in SettingsPage)
- *   setDoctorStatuses  - React state setter for the shared status map
- *   showToast          - (msg: string, type?: string) => void
+ *   onAddDoctor, onDeactivateDoctor, onReactivateDoctor - backend-backed action handlers
  */
-export default function DoctorManagement({ getDoctor, setDoctorStatuses, showToast }) {
+export default function DoctorManagement({ onAddDoctor, onDeactivateDoctor, onReactivateDoctor }) {
   return (
     <>
-      <AddDoctorCard showToast={showToast} />
+      <AddDoctorCard onAddDoctor={onAddDoctor} />
 
       <div className="stg-divider" aria-hidden="true" />
 
       <DisableDoctorCard
-        getDoctor={getDoctor}
-        setDoctorStatuses={setDoctorStatuses}
-        showToast={showToast}
+        onDisable={onDeactivateDoctor}
       />
 
       <div className="stg-divider" aria-hidden="true" />
 
       <ReactivateDoctorCard
-        getDoctor={getDoctor}
-        setDoctorStatuses={setDoctorStatuses}
-        showToast={showToast}
+        onReactivate={onReactivateDoctor}
       />
     </>
   );

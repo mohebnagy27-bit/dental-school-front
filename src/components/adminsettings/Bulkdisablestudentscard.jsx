@@ -2,26 +2,25 @@ import React, { useState, useRef } from 'react';
 import SharedActionCard    from './SharedActionCard';
 import FileUploadZone      from './FileUploadZone';
 import ImportPreviewDialog from './ImportPreviewDialog';
-import { BULK_PREVIEW_ROWS, simulateProgress } from './data';
 
-export default function BulkDisableStudentsCard({ showToast }) {
+export default function BulkDisableStudentsCard({ onBulkDisable }) {
   const inputRef                = useRef(null);
   const [file,     setFile]     = useState(null);
   const [showDlg,  setShowDlg]  = useState(false);
   const [loading,  setLoading]  = useState(false);
-  const [progress, setProgress] = useState(0);
 
   const handleFile = (f) => { setFile(f); setShowDlg(true); };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setLoading(true);
-    simulateProgress(setProgress, () => {
+    try {
+      await onBulkDisable(file);
       setLoading(false);
       setShowDlg(false);
       setFile(null);
-      setProgress(0);
-      showToast(`${BULK_PREVIEW_ROWS.filter((r) => r.valid).length} students disabled successfully.`);
-    });
+    } catch {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -46,10 +45,9 @@ export default function BulkDisableStudentsCard({ showToast }) {
       <ImportPreviewDialog
         open={showDlg}
         fileName={file?.name || ''}
-        rows={BULK_PREVIEW_ROWS}
         loading={loading}
-        progress={progress}
         confirmLabel="Confirm Disable"
+        description="The server will validate the uploaded IDs and disable the matching student accounts."
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />

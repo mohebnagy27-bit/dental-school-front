@@ -160,12 +160,6 @@
   }
 }
 
-/* @media (max-width: 1060px) {
-  .doctor-dashboard__grid {
-    grid-template-columns: 1fr;
-  }
-} */
-
 @media (max-width: 1023px) {
   /* Sidebar is hidden — main takes full width */
   .doctor-dashboard__main {
@@ -173,29 +167,11 @@
   }
 }
 
-/* @media (max-width: 860px) {
-  .doctor-dashboard__stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .doctor-dashboard__content {
-    padding: 20px 18px;
-  }
-} */
-
 @media (max-width: 900px) {
   .doctor-dashboard__grid {
     grid-template-columns: 1fr;
   }
 }
-
-/* @media (max-width: 600px) {
-  .doctor-dashboard {
-    flex-direction: column;
-  }
-  .doctor-dashboard__stats {
-    grid-template-columns: 1fr 1fr;
-  }
-} */
 
 @media (max-width: 767px) {
   .doctor-dashboard__content {
@@ -215,15 +191,11 @@
     flex-direction: column;
     align-items: stretch;
   }
-
-  /* .dd-filter-pills {
-    justify-content: flex-start;
-  } */
 }
 
 @media (max-width: 639px) {
   .doctor-dashboard__grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 

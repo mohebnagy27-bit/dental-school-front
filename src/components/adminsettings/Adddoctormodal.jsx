@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { isValidEmail } from './data';
+
+const isValidEmail = (value) => /^\S+@\S+\.\S+$/.test(value.trim());
 
 /**
  * AddDoctorModal
@@ -15,6 +16,7 @@ export default function AddDoctorModal({ open, onSave, onCancel }) {
   const [form,    setForm]    = useState({ username: '', email: '', password: '' });
   const [errors,  setErrors]  = useState({});
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [showPw,  setShowPw]  = useState(false);
 
   /* Reset form every time the dialog opens */
@@ -23,6 +25,7 @@ export default function AddDoctorModal({ open, onSave, onCancel }) {
       setForm({ username: '', email: '', password: '' });
       setErrors({});
       setLoading(false);
+      setSubmitError('');
       setShowPw(false);
     }
   }, [open]);
@@ -41,14 +44,19 @@ export default function AddDoctorModal({ open, onSave, onCancel }) {
   const handleChange = (field) => (e) => {
     setForm((p) => ({ ...p, [field]: e.target.value }));
     setErrors((p) => ({ ...p, [field]: '' }));
+    setSubmitError('');
   };
 
   const handleSubmit = async () => {
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    setLoading(false);
-    onSave({ ...form });
+    try {
+      await onSave({ ...form });
+    } catch (error) {
+      setSubmitError(error?.response?.data?.message || error?.userMessage || 'Unable to create the doctor. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -149,6 +157,7 @@ export default function AddDoctorModal({ open, onSave, onCancel }) {
             </div>
             {errors.password && <span className="stg-field__error">{errors.password}</span>}
           </div>
+          {submitError && <p className="stg-field__error" role="alert">{submitError}</p>}
         </div>
 
         {/* Footer */}

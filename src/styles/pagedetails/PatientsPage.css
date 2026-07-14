@@ -9,6 +9,20 @@
    RecentTable already handles internal scroll. */
 .page-shell__content > .recent-table {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 1023px) {
+  .page-shell__content > .recent-table .recent-table__scroll {
+    width: 100%;
+    max-width: 100%;
+    overscroll-behavior-x: contain;
+  }
+
+  .page-shell__content > .recent-table .recent-table__table {
+    min-width: 640px;
+  }
 }
 
 /* ── Responsive ──────────────────────────────────── */

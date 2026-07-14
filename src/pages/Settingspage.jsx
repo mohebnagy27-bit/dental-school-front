@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Sidebar from '../components/dashboard/Sidebar';
 import Topbar  from '../components/dashboard/Topbar';
+import StatCard from '../components/dashboard/StatCard';
 
 import ManagementAccordion from '../components/adminsettings/Managementaccordion';
 import ManagementSection   from '../components/adminsettings/ManagementSection';
@@ -8,7 +10,16 @@ import StudentManagement   from '../components/adminsettings/StudentManagement';
 import DoctorManagement    from '../components/adminsettings/DoctorManagement';
 import Toast               from '../components/adminsettings/Toast';
 
-import { MOCK_STUDENTS, MOCK_DOCTORS } from '../components/adminsettings/data';
+import {
+  addDoctor,
+  bulkDeactivateStudents,
+  deactivateDoctor,
+  deactivateStudent,
+  reactivateDoctor,
+  reactivateStudent,
+  uploadStudents,
+} from '../services/adminService';
+import { getDashboardStatistics } from '../services/managementService';
 import '../styles/SettingsPage.css';
 
 /* ── Section icons (defined here so they don't re-create on each render) ── */
@@ -29,17 +40,50 @@ const DoctorIcon = (
   </svg>
 );
 
-/* ================================================================
-   SETTINGS PAGE
-   Owns only:
-     - sidebar open/close
-     - toast notification
-     - shared status maps (studentStatuses, doctorStatuses)
-     - memoized getStudent / getDoctor lookup helpers
-   Everything else is delegated to child components.
-   ================================================================ */
+const StatIcons = {
+  students: StudentIcon,
+  doctors: DoctorIcon,
+};
+
+function getDashboardData(response) {
+  const data = response?.data ?? response ?? {};
+  return data.dashboard ?? data.statistics ?? data.stats ?? data;
+}
+
+function getStatValue(data, group, state) {
+  const directKeys = {
+    students: {
+      total: ['totalStudents', 'studentsCount', 'studentCount'],
+      active: ['activeStudents', 'activeStudentsCount'],
+      inactive: ['inactiveStudents', 'inactiveStudentsCount', 'disabledStudents'],
+    },
+    doctors: {
+      total: ['totalDoctors', 'doctorsCount', 'doctorCount'],
+      active: ['activeDoctors', 'activeDoctorsCount'],
+      inactive: ['inactiveDoctors', 'inactiveDoctorsCount', 'disabledDoctors'],
+    },
+  };
+  const nested = data?.[group] ?? data?.[`${group}Statistics`] ?? data?.[`${group}Stats`];
+  const candidates = [
+    ...directKeys[group][state].map((key) => data?.[key]),
+    nested?.[state],
+    nested?.[`${state}Count`],
+    state === 'total' ? nested?.count : undefined,
+  ];
+  const value = candidates.find((candidate) => Number.isFinite(Number(candidate)));
+  return value === undefined ? '—' : Number(value);
+}
+
+function getResponseMessage(response, fallback) {
+  return response?.message || response?.data?.message || fallback;
+}
+
+function getErrorMessage(error) {
+  return error?.response?.data?.message || error?.userMessage || 'Unable to complete the request. Please try again.';
+}
 
 export default function SettingsPage() {
+  const queryClient = useQueryClient();
   /* ── Sidebar ── */
   const [sidebarOpen, setSidebarOpen] = useState(false);
   useEffect(() => {
@@ -60,26 +104,49 @@ export default function SettingsPage() {
 
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
-  /* ── Shared status maps ──
-     Live overrides applied on top of mock base data.
-     Passed down as setter functions so individual cards can update them.
-     getStudent / getDoctor are memoized — their identity changes only when
-     the corresponding status map changes, which re-triggers child useEffects
-     that depend on them (keeping preview cards in sync after an action). ── */
-  const [studentStatuses, setStudentStatuses] = useState({});
-  const [doctorStatuses,  setDoctorStatuses]  = useState({});
+  const { data: dashboardResponse, isLoading: isStatsLoading } = useQuery({
+    queryKey: ['management-dashboard'],
+    queryFn: getDashboardStatistics,
+  });
+  const refreshStatistics = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['management-dashboard'] });
+  }, [queryClient]);
 
-  const getStudent = useCallback((id) => {
-    const base = MOCK_STUDENTS[id];
-    if (!base) return null;
-    return { ...base, status: studentStatuses[id] ?? base.status };
-  }, [studentStatuses]);
+  const uploadStudentsMutation = useMutation({ mutationFn: uploadStudents, onSuccess: refreshStatistics });
+  const bulkDeactivateMutation = useMutation({ mutationFn: bulkDeactivateStudents, onSuccess: refreshStatistics });
+  const addDoctorMutation = useMutation({ mutationFn: addDoctor, onSuccess: refreshStatistics });
+  const deactivateStudentMutation = useMutation({ mutationFn: deactivateStudent, onSuccess: refreshStatistics });
+  const reactivateStudentMutation = useMutation({ mutationFn: reactivateStudent, onSuccess: refreshStatistics });
+  const deactivateDoctorMutation = useMutation({ mutationFn: deactivateDoctor, onSuccess: refreshStatistics });
+  const reactivateDoctorMutation = useMutation({ mutationFn: reactivateDoctor, onSuccess: refreshStatistics });
 
-  const getDoctor = useCallback((id) => {
-    const base = MOCK_DOCTORS[id];
-    if (!base) return null;
-    return { ...base, status: doctorStatuses[id] ?? base.status };
-  }, [doctorStatuses]);
+  const dashboardStatistics = useMemo(() => getDashboardData(dashboardResponse), [dashboardResponse]);
+  const statistics = useMemo(() => ({
+    totalStudents: getStatValue(dashboardStatistics, 'students', 'total'),
+    activeStudents: getStatValue(dashboardStatistics, 'students', 'active'),
+    inactiveStudents: getStatValue(dashboardStatistics, 'students', 'inactive'),
+    totalDoctors: getStatValue(dashboardStatistics, 'doctors', 'total'),
+    activeDoctors: getStatValue(dashboardStatistics, 'doctors', 'active'),
+    inactiveDoctors: getStatValue(dashboardStatistics, 'doctors', 'inactive'),
+  }), [dashboardStatistics]);
+
+  const runAction = useCallback(async (mutation, variables, fallbackMessage) => {
+    try {
+      const response = await mutation.mutateAsync(variables);
+      showToast(getResponseMessage(response, fallbackMessage));
+      return response;
+    } catch (error) {
+      const message = getErrorMessage(error);
+      showToast(message, 'error');
+      throw error;
+    }
+  }, [showToast]);
+
+  const createFilePayload = useCallback((file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return formData;
+  }, []);
 
   /* ================================================================
      RENDER
@@ -111,36 +178,34 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          <section className="stg-stats" aria-label="Account statistics">
+            <StatCard label="Total Students" value={isStatsLoading ? '…' : statistics.totalStudents} icon={StatIcons.students} accent="blue" />
+            <StatCard label="Active Students" value={isStatsLoading ? '…' : statistics.activeStudents} icon={StatIcons.students} accent="green" />
+            <StatCard label="Inactive Students" value={isStatsLoading ? '…' : statistics.inactiveStudents} icon={StatIcons.students} accent="rose" />
+            <StatCard label="Total Doctors" value={isStatsLoading ? '…' : statistics.totalDoctors} icon={StatIcons.doctors} accent="navy" />
+            <StatCard label="Active Doctors" value={isStatsLoading ? '…' : statistics.activeDoctors} icon={StatIcons.doctors} accent="green" />
+            <StatCard label="Inactive Doctors" value={isStatsLoading ? '…' : statistics.inactiveDoctors} icon={StatIcons.doctors} accent="rose" />
+          </section>
+
           {/* Accordion — only one section open at a time, both collapsed by default */}
           <ManagementAccordion>
             <ManagementSection sectionId="student" icon={StudentIcon} title="Student Management">
               <StudentManagement
-                getStudent={getStudent}
-                setStudentStatuses={setStudentStatuses}
-                showToast={showToast}
+                onImportStudents={(file) => runAction(uploadStudentsMutation, createFilePayload(file), 'Students imported successfully.')}
+                onBulkDeactivateStudents={(file) => runAction(bulkDeactivateMutation, createFilePayload(file), 'Students disabled successfully.')}
+                onDeactivateStudent={(id) => runAction(deactivateStudentMutation, id, 'Student disabled successfully.')}
+                onReactivateStudent={(id) => runAction(reactivateStudentMutation, id, 'Student reactivated successfully.')}
               />
             </ManagementSection>
 
             <ManagementSection sectionId="doctor" icon={DoctorIcon} title="Doctor Management">
               <DoctorManagement
-                getDoctor={getDoctor}
-                setDoctorStatuses={setDoctorStatuses}
-                showToast={showToast}
+                onAddDoctor={(data) => runAction(addDoctorMutation, data, 'Doctor created successfully.')}
+                onDeactivateDoctor={(id) => runAction(deactivateDoctorMutation, id, 'Doctor disabled successfully.')}
+                onReactivateDoctor={(id) => runAction(reactivateDoctorMutation, id, 'Doctor reactivated successfully.')}
               />
             </ManagementSection>
           </ManagementAccordion>
-
-          {/* Hint bar */}
-          <div className="stg-hint-bar">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.3" />
-              <path d="M7 6v4M7 4.5v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-            </svg>
-            <span>
-              Try mock IDs: <strong>STU-20240001</strong> through <strong>STU-20240005</strong> for students,
-              and <strong>DOC-001</strong> through <strong>DOC-003</strong> for doctors.
-            </span>
-          </div>
 
         </main>
       </div>

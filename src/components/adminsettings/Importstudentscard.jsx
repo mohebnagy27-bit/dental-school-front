@@ -2,26 +2,25 @@ import React, { useState, useRef } from 'react';
 import SharedActionCard    from './SharedActionCard';
 import FileUploadZone      from './FileUploadZone';
 import ImportPreviewDialog from './ImportPreviewDialog';
-import { IMPORT_PREVIEW_ROWS, simulateProgress } from './data';
 
-export default function ImportStudentsCard({ showToast }) {
+export default function ImportStudentsCard({ onImport }) {
   const inputRef                   = useRef(null);
   const [file,     setFile]        = useState(null);
   const [showDlg,  setShowDlg]     = useState(false);
   const [loading,  setLoading]     = useState(false);
-  const [progress, setProgress]    = useState(0);
 
   const handleFile = (f) => { setFile(f); setShowDlg(true); };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setLoading(true);
-    simulateProgress(setProgress, () => {
+    try {
+      await onImport(file);
       setLoading(false);
       setShowDlg(false);
       setFile(null);
-      setProgress(0);
-      showToast(`${IMPORT_PREVIEW_ROWS.filter((r) => r.valid).length} students imported successfully.`);
-    });
+    } catch {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -32,8 +31,8 @@ export default function ImportStudentsCard({ showToast }) {
     <>
       <SharedActionCard number="1" title="Import Students from Excel">
         <p className="stg-sub-desc">
-          Upload an Excel file (.xlsx or .xls) containing student records. The system will preview
-          and validate the data before importing.
+          Upload an Excel file (.xlsx or .xls) containing student records. The server validates
+          and imports the data after confirmation.
         </p>
         <FileUploadZone
           inputRef={inputRef}
@@ -47,10 +46,9 @@ export default function ImportStudentsCard({ showToast }) {
       <ImportPreviewDialog
         open={showDlg}
         fileName={file?.name || ''}
-        rows={IMPORT_PREVIEW_ROWS}
         loading={loading}
-        progress={progress}
         confirmLabel="Confirm Import"
+        description="The server will validate and import the selected student records."
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />

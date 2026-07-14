@@ -93,7 +93,7 @@ export function AppRoutes() {
       <Route path="/student/reserved-cases"    element={<ProtectedRoute allowedRoles={['STUDENT']}><ReservedCasesPage /></ProtectedRoute>} />
       <Route path="/student/completed-cases"   element={<ProtectedRoute allowedRoles={['STUDENT']}><CompletedCasesPage /></ProtectedRoute>} />
 
-      <Route path="/doctor/new-patient" element={<ProtectedRoute allowedRoles={['DOCTOR', 'SUPER_ADMIN']}><PatientRegistrationPage /></ProtectedRoute>} />
+      <Route path="/doctor/new-patient" element={<ProtectedRoute allowedRoles={['DOCTOR']}><PatientRegistrationPage /></ProtectedRoute>} />
 
       <Route path="/student/patients/:id"  element={<ProtectedRoute allowedRoles={['STUDENT']}><PatientDetailsPage /></ProtectedRoute>} />
       <Route path="/student/profile"      element={<ProtectedRoute allowedRoles={['STUDENT']}><StudentProfilePage /></ProtectedRoute>} />

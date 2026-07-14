@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import SharedActionCard from './SharedActionCard';
 import AddDoctorModal   from './AddDoctorModal';
 
-export default function AddDoctorCard({ showToast }) {
+export default function AddDoctorCard({ onAddDoctor }) {
   const [showDlg, setShowDlg] = useState(false);
 
-  const handleSave = (form) => {
+  const handleSave = async (form) => {
+    await onAddDoctor(form);
     setShowDlg(false);
-    showToast(`Doctor "${form.username}" created successfully.`);
   };
 
   return (

@@ -7,6 +7,7 @@ export default function ConfirmDialog({
   detail,
   confirmLabel,
   confirmVariant = 'danger',
+  loading = false,
   onConfirm,
   onCancel,
 }) {
@@ -15,7 +16,7 @@ export default function ConfirmDialog({
   return (
     <div
       className="stg-overlay"
-      onClick={onCancel}
+      onClick={!loading ? onCancel : undefined}
       role="dialog"
       aria-modal="true"
       aria-labelledby="stg-confirm-title"
@@ -31,15 +32,16 @@ export default function ConfirmDialog({
         </div>
 
         <div className="stg-dialog__footer">
-          <button type="button" className="stg-btn stg-btn--ghost" onClick={onCancel}>
+          <button type="button" className="stg-btn stg-btn--ghost" onClick={onCancel} disabled={loading}>
             Cancel
           </button>
           <button
             type="button"
             className={`stg-btn stg-btn--${confirmVariant}`}
             onClick={onConfirm}
+            disabled={loading}
           >
-            {confirmLabel}
+            {loading ? <><span className="stg-spinner" aria-hidden="true" /> Processing…</> : confirmLabel}
           </button>
         </div>
       </div>

@@ -9,34 +9,29 @@ import BulkDisableStudentsCard from './BulkDisableStudentsCard';
  * Composes the four student-management action cards in order.
  *
  * Props:
- *   getStudent          - (id: string) => student | null  (memoized in SettingsPage)
- *   setStudentStatuses  - React state setter for the shared status map
- *   showToast           - (msg: string, type?: string) => void
+ *   onImportStudents, onBulkDeactivateStudents, onDeactivateStudent,
+ *   onReactivateStudent - backend-backed action handlers
  */
-export default function StudentManagement({ getStudent, setStudentStatuses, showToast }) {
+export default function StudentManagement({ onImportStudents, onBulkDeactivateStudents, onDeactivateStudent, onReactivateStudent }) {
   return (
     <>
-      <ImportStudentsCard showToast={showToast} />
+      <ImportStudentsCard onImport={onImportStudents} />
 
       <div className="stg-divider" aria-hidden="true" />
 
       <DisableStudentCard
-        getStudent={getStudent}
-        setStudentStatuses={setStudentStatuses}
-        showToast={showToast}
+        onDisable={onDeactivateStudent}
       />
 
       <div className="stg-divider" aria-hidden="true" />
 
       <ReactivateStudentCard
-        getStudent={getStudent}
-        setStudentStatuses={setStudentStatuses}
-        showToast={showToast}
+        onReactivate={onReactivateStudent}
       />
 
       <div className="stg-divider" aria-hidden="true" />
 
-      <BulkDisableStudentsCard showToast={showToast} />
+      <BulkDisableStudentsCard onBulkDisable={onBulkDeactivateStudents} />
     </>
   );
 }

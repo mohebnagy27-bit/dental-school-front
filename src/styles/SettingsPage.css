@@ -57,6 +57,18 @@
   flex-shrink: 0;
 }
 
+/* Reuses the shared dashboard StatCard component; only the six-card grid
+   belongs to Settings. */
+.stg-stats {
+  /* display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px; */
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
 /* ================================================================
    ACCORDION WRAPPER
    ================================================================ */
@@ -1050,6 +1062,7 @@
   .stg-page-header {
     gap: 10px;
   }
+
   .stg-page-title {
     font-size: 19px;
   }
@@ -1090,7 +1103,6 @@
     padding: 12px;
     gap: 12px;
   }
-
   .stg-section__title {
     font-size: 14.5px;
   }
@@ -1154,5 +1166,18 @@
 @media (max-width: 400px) {
   .stg-import-stats {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 340px) and (max-width: 1280px) {
+  .stg-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 339px) {
+  .stg-stats {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
   }
 }

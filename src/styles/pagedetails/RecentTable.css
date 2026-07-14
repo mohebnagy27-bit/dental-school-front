@@ -19,6 +19,7 @@
 .recent-table__scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  max-width: 100%;
   /* Subtle hint that content is scrollable */
   scrollbar-width: thin;
   scrollbar-color: var(--color-border, #e2e8f0) transparent;
@@ -149,5 +150,16 @@
   .recent-table__td {
     padding: 11px 14px;
     font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  .recent-table {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .recent-table__scroll {
+    overscroll-behavior-x: contain;
   }
 }

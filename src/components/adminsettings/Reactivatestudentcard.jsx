@@ -1,35 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import SharedActionCard from './SharedActionCard';
 import IdLookupField    from './IdLookupField';
-import UserPreviewCard  from './UserPreviewCard';
 import ConfirmDialog    from './ConfirmDialog';
 
-export default function ReactivateStudentCard({ getStudent, setStudentStatuses, showToast }) {
-  const [id,       setId]       = useState('');
-  const [data,     setData]     = useState(null);
-  const [notFound, setNotFound] = useState(false);
-  const [showDlg,  setShowDlg]  = useState(false);
-
-  useEffect(() => {
-    if (!id.trim()) { setData(null); setNotFound(false); return; }
-    const s = getStudent(id.trim());
-    setData(s);
-    setNotFound(!s);
-  }, [id, getStudent]);
+export default function ReactivateStudentCard({ onReactivate }) {
+  const [id, setId] = useState('');
+  const [showDlg, setShowDlg] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleAction = () => {
-    if (!data) return;
-    if (data.status === 'Active') {
-      showToast('This student is already active.', 'error');
-      return;
-    }
-    setShowDlg(true);
+    if (id.trim()) setShowDlg(true);
   };
 
-  const handleConfirm = () => {
-    setStudentStatuses((p) => ({ ...p, [data.id]: 'Active' }));
-    setShowDlg(false);
-    showToast(`${data.name} has been reactivated.`);
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      await onReactivate(id.trim());
+      setShowDlg(false);
+      setId('');
+    } catch {
+      // The parent action displays the API error in the shared toast.
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,36 +36,31 @@ export default function ReactivateStudentCard({ getStudent, setStudentStatuses, 
           placeholder="e.g. STU-20240003"
           value={id}
           onChange={setId}
-          notFound={notFound}
         />
-        {data && (
-          <>
-            <UserPreviewCard data={data} type="student" />
-            <button
-              type="button"
-              className="stg-btn stg-btn--success"
-              onClick={handleAction}
-              disabled={data.status === 'Active'}
-            >
+        <button
+          type="button"
+          className="stg-btn stg-btn--success"
+          onClick={handleAction}
+          disabled={!id.trim()}
+        >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.3" />
                 <path d="M4.5 7l2 2 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              {data.status === 'Active' ? 'Already Active' : 'Reactivate Student'}
-            </button>
-          </>
-        )}
+          Reactivate Student
+        </button>
       </SharedActionCard>
 
       <ConfirmDialog
         open={showDlg}
         title="Reactivate Student"
         message="This will restore account access for this student. Do you want to continue?"
-        detail={data && `${data.name} — ${data.id}`}
+        detail={`Student ID: ${id}`}
         confirmLabel="Reactivate Student"
         confirmVariant="success"
         onConfirm={handleConfirm}
         onCancel={() => setShowDlg(false)}
+        loading={loading}
       />
     </>
   );

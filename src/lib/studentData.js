@@ -1,12 +1,4 @@
-export const TREATMENT_TYPE_COLORS = Object.freeze({
-  caries: '#2563eb',
-  'root canal treatment': '#f59e0b',
-  extraction: '#dc2626',
-  'crown restoration': '#7c3aed',
-  'pulp capping': '#0891b2',
-  'fixed partial denture': '#db2777',
-  'scaling & root planing': '#16a34a',
-});
+import { getTreatmentColor as getSharedTreatmentColor } from '../config/patientRegistration';
 
 const firstValue = (...values) => values.find((value) => value !== undefined && value !== null && value !== '');
 
@@ -88,7 +80,7 @@ export function getCaseTooth(caseInfo) {
 }
 
 export function getTreatmentColor(treatment) {
-  return TREATMENT_TYPE_COLORS[String(treatment || '').toLowerCase()] || '#64748b';
+  return getSharedTreatmentColor(treatment);
 }
 
 export function getStudentProfile(user, fallbackId = '') {

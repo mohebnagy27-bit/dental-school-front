@@ -1,4 +1,4 @@
-import { CARIES_CLASSES } from './constants';
+import { PATIENT_REGISTRATION_CONFIG, DIAGNOSIS_BY_ID } from '../../config/patientRegistration';
 import FormField from './FormField';
 import FormSection from './FormSection';
 
@@ -13,13 +13,15 @@ export default function DiagnosisSection({
   onClearTeeth,
   onAdd,
 }) {
+  const { diagnosis: labels } = PATIENT_REGISTRATION_CONFIG.sections;
+  const selectedDiagnosis = DIAGNOSIS_BY_ID[diagnosis.type];
   const selectedTeeth = Array.from(pendingTeeth).sort((a, b) => a - b);
   const selectionLabel = pendingTeeth.size > 0
     ? `${pendingTeeth.size} tooth${pendingTeeth.size > 1 ? ' teeth' : ''} selected`
     : 'No teeth selected';
 
   return (
-    <FormSection title="Diagnosis Assignment" locked={!isUnlocked} sectionRef={sectionRef}>
+    <FormSection title={labels.title} locked={!isUnlocked} sectionRef={sectionRef}>
       <div className="reg-teeth-indicator">
         <div className="reg-teeth-indicator__count">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -46,27 +48,25 @@ export default function DiagnosisSection({
       </div>
 
       <div className="reg-row reg-row--2">
-        <FormField label="Diagnosis Type" required>
+        <FormField label={labels.diagnosisLabel} required>
           <select
             className="reg-select"
             value={diagnosis.type}
             onChange={(event) => onDiagnosisChange('type', event.target.value)}
           >
-            <option value="">Select diagnosis…</option>
-            <option value="caries">Caries</option>
-            <option value="extraction">Extraction</option>
-            <option value="remaining_root">Remaining Root</option>
+            <option value="">{labels.selectDiagnosisPlaceholder}</option>
+            {PATIENT_REGISTRATION_CONFIG.diagnoses.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
           </select>
         </FormField>
-        {diagnosis.type === 'caries' && (
-          <FormField label="Caries Class" required>
+        {selectedDiagnosis?.subtypes.length > 0 && (
+          <FormField label={labels.cariesClassLabel} required>
             <select
               className="reg-select"
               value={diagnosis.subtype}
               onChange={(event) => onDiagnosisChange('subtype', event.target.value)}
             >
-              <option value="">Select class…</option>
-              {CARIES_CLASSES.map((cariesClass) => <option key={cariesClass} value={cariesClass}>{cariesClass}</option>)}
+              <option value="">{labels.selectSubtypePlaceholder}</option>
+              {selectedDiagnosis.subtypes.map((subtype) => <option key={subtype} value={subtype}>{subtype}</option>)}
             </select>
           </FormField>
         )}
@@ -75,9 +75,9 @@ export default function DiagnosisSection({
       {error && <p className="reg-form-error" role="alert">{error}</p>}
       <div className="reg-section__actions">
         <button type="button" className="reg-btn reg-btn--primary" onClick={onAdd} disabled={!isUnlocked}>
-          + Add Diagnosis Group
+          {labels.addLabel}
         </button>
-        <span className="reg-section__actions-hint">Assigns the selected teeth to this diagnosis and adds it to the summary table.</span>
+        <span className="reg-section__actions-hint">{labels.addHint}</span>
       </div>
     </FormSection>
   );

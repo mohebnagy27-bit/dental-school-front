@@ -1,4 +1,5 @@
 import React from 'react';
+import { PATIENT_REGISTRATION_CONFIG, getDiagnosisColor } from '../../config/patientRegistration';
 import '../../styles/pagedetails/DentalChart.css';
 
 /* ─── FDI tooth type by position digit ─── */
@@ -94,10 +95,8 @@ const Tooth = ({ number, isUpper, isPending, assignedColor, onToggle }) => {
 
 /* ─── Legend item ─── */
 const LEGEND = [
-  { label: 'Pending', color: '#64748B' },
-  { label: 'Caries', color: '#3B82F6' },
-  { label: 'Extraction', color: '#EF4444' },
-  { label: 'Remaining Root', color: '#F97316' },
+  { label: PATIENT_REGISTRATION_CONFIG.dentalChart.pendingLabel, color: PATIENT_REGISTRATION_CONFIG.dentalChart.pendingColor },
+  ...PATIENT_REGISTRATION_CONFIG.diagnoses.map((diagnosis) => ({ label: diagnosis.label, color: getDiagnosisColor(diagnosis.id) })),
 ];
 
 /* ─── Main chart ─── */
@@ -125,10 +124,10 @@ export default function DentalChart({
     });
 
   const hint = disabled
-    ? 'Complete patient information above to activate the dental chart.'
+    ? PATIENT_REGISTRATION_CONFIG.dentalChart.disabledHint
     : pendingTeeth.size > 0
     ? `${pendingTeeth.size} tooth${pendingTeeth.size > 1 ? ' teeth' : ''} selected — assign a diagnosis below.`
-    : 'Click teeth to select them. Multiple teeth can be selected at once.';
+    : PATIENT_REGISTRATION_CONFIG.dentalChart.idleHint;
 
   return (
     <div className={`dental-chart${disabled ? ' dental-chart--disabled' : ''}`}>

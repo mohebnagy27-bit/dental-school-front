@@ -1,8 +1,7 @@
 const sortTeeth = (teeth) => [...teeth].sort((a, b) => a - b);
 
 /**
- * Converts UI-only state into a serializable record ready for a future API client.
- * Keeping this mapping separate means backend field changes stay out of the UI.
+ * Converts UI-only form state into the registration payload accepted by the API.
  */
 export function createPatientRegistrationPayload({ patient, cases, options, medical }) {
   return {
@@ -10,6 +9,7 @@ export function createPatientRegistrationPayload({ patient, cases, options, medi
       name: patient.name.trim(),
       age: Number(patient.age),
       phone: patient.phone.trim(),
+      gender: patient.gender,
     },
     cases: cases.map((caseItem) => ({
       ...caseItem,

@@ -1,24 +1,30 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { DIAGNOSIS_COLORS } from '../components/patient-registration/constants';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  getDiagnosisColor,
+  getDiagnosisLabel,
+  getTreatmentLabel,
+  PATIENT_REGISTRATION_CONFIG,
+} from '../config/patientRegistration';
 import { createPatientRegistrationPayload } from '../components/patient-registration/patientRegistrationPayload';
 import { validatePatient } from '../components/patient-registration/validation';
+import { addPatient } from '../services/doctorService';
 
-const createInitialPatient = () => ({ name: '', age: '', phone: '' });
+const createInitialPatient = () => ({ name: '', age: '', phone: '', gender: '' });
 const createInitialDiagnosis = () => ({ type: '', subtype: '' });
-const createInitialTreatment = () => ({
-  scaling: '', orthodontic: '', bridge: '', bridgeTeeth: new Set(),
-  partial: false, partialTeeth: new Set(), implant: false, implantTeeth: new Set(),
-});
+const createInitialTreatment = () => PATIENT_REGISTRATION_CONFIG.treatmentPlans.reduce((initialTreatment, plan) => {
+  initialTreatment[plan.id] = plan.control === 'checkbox' ? false : '';
+  if (plan.toothField) initialTreatment[plan.toothField] = new Set();
+  return initialTreatment;
+}, {});
 const createInitialOptions = () => ({ completeDenture: false, singleDenture: false, singleArch: '' });
 const createInitialMedical = () => ({ history: '', complications: '', notes: '' });
 
 let nextCaseId = 0;
 const createCaseId = () => `case_${++nextCaseId}_${Math.random().toString(36).slice(2, 6)}`;
 
-// Retains the current confirmation experience without making a network request.
-const simulateRegistrationSave = () => new Promise((resolve) => setTimeout(resolve, 1600));
-
-export default function usePatientRegistration({ submitRegistration = simulateRegistrationSave } = {}) {
+export default function usePatientRegistration() {
+  const queryClient = useQueryClient();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [patient, setPatient] = useState(createInitialPatient);
   const [touchedFields, setTouchedFields] = useState({});
@@ -31,31 +37,42 @@ export default function usePatientRegistration({ submitRegistration = simulateRe
   const [options, setOptions] = useState(createInitialOptions);
   const [medical, setMedical] = useState(createInitialMedical);
   const [showDialog, setShowDialog] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const diagnosisSectionRef = useRef(null);
   const treatmentSectionRef = useRef(null);
+  const registrationMutation = useMutation({
+    mutationFn: addPatient,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['management-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['management-patients-overview'] });
+      queryClient.invalidateQueries({ queryKey: ['student-patients'] });
+      queryClient.invalidateQueries({ queryKey: ['student-cases'] });
+    },
+  });
+  const isSaving = registrationMutation.isPending;
 
   const patientValidation = useMemo(() => validatePatient(patient), [patient]);
   const patientErrors = useMemo(() => ({
     name: touchedFields.name ? patientValidation.name : '',
     age: touchedFields.age ? patientValidation.age : '',
     phone: touchedFields.phone ? patientValidation.phone : '',
+    gender: touchedFields.gender ? patientValidation.gender : '',
   }), [patientValidation, touchedFields]);
-  const isPatientInfoValid = !patientValidation.name && !patientValidation.age && !patientValidation.phone;
+  const isPatientInfoValid = !patientValidation.name && !patientValidation.age && !patientValidation.phone && !patientValidation.gender;
 
   const toothColorMap = useMemo(() => {
     const colors = {};
     cases.filter((caseItem) => caseItem.type === 'diagnosis').forEach((caseItem) => {
       caseItem.teeth.forEach((toothNumber) => {
-        colors[toothNumber] = DIAGNOSIS_COLORS[caseItem.diagnosisCategory] || '#6B7280';
+        colors[toothNumber] = getDiagnosisColor(caseItem.diagnosisCategory);
       });
     });
     return colors;
   }, [cases]);
 
   const hasUnsavedChanges = Boolean(
-    patient.name || patient.age || patient.phone || cases.length > 0 || options.completeDenture || options.singleDenture ||
+    patient.name || patient.age || patient.phone || patient.gender || cases.length > 0 || options.completeDenture || options.singleDenture ||
     medical.history || medical.complications || medical.notes
   );
 
@@ -95,14 +112,14 @@ export default function usePatientRegistration({ submitRegistration = simulateRe
   const addDiagnosis = useCallback(() => {
     if (pendingTeeth.size === 0) return setDiagnosisError('Please select at least one tooth on the chart above.');
     if (!diagnosis.type) return setDiagnosisError('Please select a diagnosis type.');
-    if (diagnosis.type === 'caries' && !diagnosis.subtype) return setDiagnosisError('Please select a caries class.');
+    if (PATIENT_REGISTRATION_CONFIG.diagnoses.find((item) => item.id === diagnosis.type)?.subtypes.length && !diagnosis.subtype) return setDiagnosisError('Please select a caries class.');
 
     const selectedTeeth = Array.from(pendingTeeth);
     const conflictingTeeth = selectedTeeth.filter((toothNumber) => toothColorMap[toothNumber] !== undefined);
     if (conflictingTeeth.length) {
       return setDiagnosisError(`Tooth${conflictingTeeth.length > 1 ? 'teeth' : ''} ${conflictingTeeth.join(', ')} already assigned.`);
     }
-    const diagnosisLabel = diagnosis.type === 'caries' ? `Caries — ${diagnosis.subtype}` : diagnosis.type === 'extraction' ? 'Extraction' : 'Remaining Root';
+    const diagnosisLabel = getDiagnosisLabel(diagnosis.type, diagnosis.subtype);
     setCases((current) => [...current, {
       id: createCaseId(), type: 'diagnosis', teeth: selectedTeeth, diagnosisLabel,
       diagnosisCategory: diagnosis.type, diagnosisSubtype: diagnosis.subtype, treatmentLabel: null, treatmentTeeth: [],
@@ -128,11 +145,10 @@ export default function usePatientRegistration({ submitRegistration = simulateRe
       id: createCaseId(), type: 'treatment', treatmentLabel, treatmentTeeth,
       diagnosisLabel: null, diagnosisCategory: null, teeth: [],
     });
-    if (treatment.scaling) add(`Scaling — ${treatment.scaling}`);
-    if (treatment.orthodontic) add(`Orthodontic — ${treatment.orthodontic}`);
-    if (treatment.bridge) add(`Bridge — ${treatment.bridge} Bridge`, Array.from(treatment.bridgeTeeth));
-    if (treatment.partial) add('Partial Denture', Array.from(treatment.partialTeeth));
-    if (treatment.implant) add('Implant', Array.from(treatment.implantTeeth));
+    PATIENT_REGISTRATION_CONFIG.treatmentPlans.forEach((plan) => {
+      if (!treatment[plan.id]) return;
+      add(getTreatmentLabel(plan.id, plan.control === 'radio' ? treatment[plan.id] : ''), plan.toothField ? Array.from(treatment[plan.toothField]) : []);
+    });
     if (!newTreatments.length) return setTreatmentError('Please select at least one treatment option.');
     setCases((current) => [...current, ...newTreatments]);
     setTreatment(createInitialTreatment());
@@ -155,11 +171,17 @@ export default function usePatientRegistration({ submitRegistration = simulateRe
       return;
     }
     const label = caseItem.treatmentLabel || '';
-    if (label.startsWith('Scaling')) setTreatment((current) => ({ ...current, scaling: label.replace('Scaling — ', '') }));
-    else if (label.startsWith('Orthodontic')) setTreatment((current) => ({ ...current, orthodontic: label.replace('Orthodontic — ', '') }));
-    else if (label.startsWith('Bridge')) setTreatment((current) => ({ ...current, bridge: label.includes('Anterior') ? 'Anterior' : 'Posterior', bridgeTeeth: new Set(caseItem.treatmentTeeth || []) }));
-    else if (label === 'Partial Denture') setTreatment((current) => ({ ...current, partial: true, partialTeeth: new Set(caseItem.treatmentTeeth || []) }));
-    else if (label === 'Implant') setTreatment((current) => ({ ...current, implant: true, implantTeeth: new Set(caseItem.treatmentTeeth || []) }));
+    const plan = PATIENT_REGISTRATION_CONFIG.treatmentPlans.find((item) => label === item.label || label.startsWith(`${item.label} — `));
+    if (plan) {
+      const option = plan.control === 'radio'
+        ? label.replace(`${plan.label} — `, '').replace(plan.optionSuffix || '', '')
+        : true;
+      setTreatment((current) => ({
+        ...current,
+        [plan.id]: option,
+        ...(plan.toothField ? { [plan.toothField]: new Set(caseItem.treatmentTeeth || []) } : {}),
+      }));
+    }
     setTimeout(() => treatmentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
   }, [cases]);
 
@@ -172,26 +194,32 @@ export default function usePatientRegistration({ submitRegistration = simulateRe
   }, []);
 
   const openSaveDialog = useCallback(() => {
-    setTouchedFields({ name: true, age: true, phone: true });
+    setTouchedFields({ name: true, age: true, phone: true, gender: true });
+    setSaveError('');
     if (isPatientInfoValid) setShowDialog(true);
   }, [isPatientInfoValid]);
 
   const closeSaveDialog = useCallback(() => {
     if (!isSaving && !saveSuccess) setShowDialog(false);
+    setSaveError('');
   }, [isSaving, saveSuccess]);
 
   const confirmSave = useCallback(async () => {
-    setIsSaving(true);
-    await submitRegistration(createPatientRegistrationPayload({ patient, cases, options, medical }));
-    setIsSaving(false);
-    setSaveSuccess(true);
-    setTimeout(() => { setShowDialog(false); setSaveSuccess(false); resetForm(); }, 2200);
-  }, [cases, medical, options, patient, resetForm, submitRegistration]);
+    if (registrationMutation.isPending) return;
+    setSaveError('');
+    try {
+      await registrationMutation.mutateAsync(createPatientRegistrationPayload({ patient, cases, options, medical }));
+      setSaveSuccess(true);
+      setTimeout(() => { setShowDialog(false); setSaveSuccess(false); resetForm(); }, 2200);
+    } catch (error) {
+      setSaveError(error.response?.data?.message || error.userMessage || 'Unable to save the patient record. Please try again.');
+    }
+  }, [cases, medical, options, patient, registrationMutation, resetForm]);
 
   return {
     sidebarOpen, setSidebarOpen, patient, patientErrors, isPatientInfoValid, hasUnsavedChanges, changePatient, touchPatientField,
     pendingTeeth, setPendingTeeth, toothColorMap, toggleTooth, diagnosis, diagnosisError, changeDiagnosis, addDiagnosis, diagnosisSectionRef,
     treatment, treatmentError, changeTreatment, addTreatment, treatmentSectionRef, options, changeOptions, medical, changeMedical,
-    cases, editCase, deleteCase, showDialog, isSaving, saveSuccess, openSaveDialog, closeSaveDialog, confirmSave,
+    cases, editCase, deleteCase, showDialog, isSaving, saveSuccess, saveError, openSaveDialog, closeSaveDialog, confirmSave,
   };
 }

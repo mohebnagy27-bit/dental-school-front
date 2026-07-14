@@ -10,10 +10,13 @@ export const isValidPhone = (value) => {
   return /^[0-9]{7,15}$/.test(digits);
 };
 
+export const isValidGender = (value) => value === 'Male' || value === 'Female';
+
 export function validatePatient(patient) {
   return {
     name: isValidName(patient.name) ? '' : 'Name must be at least 2 characters.',
     age: isValidAge(patient.age) ? '' : 'Enter a valid age (1–120).',
     phone: isValidPhone(patient.phone) ? '' : 'Enter a valid phone number.',
+    gender: isValidGender(patient.gender) ? '' : 'Please select a gender.',
   };
 }

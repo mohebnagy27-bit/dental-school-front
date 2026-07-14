@@ -1,4 +1,4 @@
-import { TOOTH_QUADRANTS } from './constants';
+import { PATIENT_REGISTRATION_CONFIG } from '../../config/patientRegistration';
 
 export default function ToothPicker({ selected, onChange, label }) {
   const toggleTooth = (toothNumber) => {
@@ -11,7 +11,7 @@ export default function ToothPicker({ selected, onChange, label }) {
     <div className="tooth-picker">
       {label && <p className="tooth-picker__label">{label}</p>}
       <div className="tooth-picker__quadrants">
-        {TOOTH_QUADRANTS.map((quadrant) => (
+        {PATIENT_REGISTRATION_CONFIG.dentalChart.quadrants.map((quadrant) => (
           <div key={quadrant.label} className="tooth-picker__quadrant">
             <span className="tooth-picker__q-label">{quadrant.label}</span>
             <div className="tooth-picker__teeth">

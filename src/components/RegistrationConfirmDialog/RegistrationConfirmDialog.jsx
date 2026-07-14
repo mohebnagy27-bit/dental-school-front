@@ -5,9 +5,11 @@ export default function RegistrationConfirmDialog({
   isOpen,
   isSaving,
   saveSuccess,
+  saveError,
   patientName,
   patientAge,
   patientPhone,
+  patientGender,
   cases,
   completeDenture,
   singleDenture,
@@ -77,6 +79,10 @@ export default function RegistrationConfirmDialog({
                   <div className="rcd__dl-row">
                     <dt>Phone</dt>
                     <dd>{patientPhone}</dd>
+                  </div>
+                  <div className="rcd__dl-row">
+                    <dt>Gender</dt>
+                    <dd>{patientGender}</dd>
                   </div>
                 </dl>
               </section>
@@ -170,6 +176,7 @@ export default function RegistrationConfirmDialog({
 
             {/* ── Footer ── */}
             <div className="rcd__footer">
+              {saveError && <p className="reg-form-error" role="alert">{saveError}</p>}
               <button
                 type="button"
                 className="rcd__btn rcd__btn--cancel"

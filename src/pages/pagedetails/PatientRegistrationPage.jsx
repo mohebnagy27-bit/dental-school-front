@@ -9,11 +9,13 @@ import FormSection from '../../components/patient-registration/FormSection';
 import MedicalInformationSection from '../../components/patient-registration/MedicalInformationSection';
 import PatientInfoSection from '../../components/patient-registration/PatientInfoSection';
 import TreatmentSection from '../../components/patient-registration/TreatmentSection';
+import { PATIENT_REGISTRATION_CONFIG } from '../../config/patientRegistration';
 import usePatientRegistration from '../../hooks/usePatientRegistration';
 import '../../styles/pagedetails/PatientRegistrationPage.css';
 
 export default function PatientRegistrationPage() {
   const registration = usePatientRegistration();
+  const { page, dentalChart } = PATIENT_REGISTRATION_CONFIG;
 
   return (
     <div className="dashboard-layout">
@@ -25,8 +27,8 @@ export default function PatientRegistrationPage() {
         <main className="dashboard-content reg-page">
           <header className="reg-page__header">
             <div>
-              <h1 className="reg-page__title">New Patient Registration</h1>
-              <p className="reg-page__subtitle">Complete the form below to register a patient and build their dental case.</p>
+              <h1 className="reg-page__title">{page.title}</h1>
+              <p className="reg-page__subtitle">{page.subtitle}</p>
             </div>
             <div className="reg-page__header-actions">
               <button
@@ -35,7 +37,7 @@ export default function PatientRegistrationPage() {
                 onClick={registration.openSaveDialog}
                 disabled={!registration.isPatientInfoValid && !registration.hasUnsavedChanges}
               >
-                Save Patient Record
+                {page.saveLabel}
               </button>
             </div>
           </header>
@@ -48,7 +50,7 @@ export default function PatientRegistrationPage() {
             onBlur={registration.touchPatientField}
           />
 
-          <FormSection title="Dental Chart" badge="FDI System" locked={!registration.isPatientInfoValid}>
+          <FormSection title={dentalChart.title} badge={dentalChart.badge} locked={!registration.isPatientInfoValid}>
             <DentalChart
               pendingTeeth={registration.pendingTeeth}
               toothColorMap={registration.toothColorMap}
@@ -84,9 +86,9 @@ export default function PatientRegistrationPage() {
 
           <div className="reg-page__footer">
             {!registration.isPatientInfoValid && registration.hasUnsavedChanges && (
-              <p className="reg-page__footer-warn">Complete patient information (Name, Age, Phone) before saving.</p>
+              <p className="reg-page__footer-warn">{page.incompleteMessage}</p>
             )}
-            <button type="button" className="reg-btn reg-btn--save" onClick={registration.openSaveDialog}>Save Patient Record</button>
+            <button type="button" className="reg-btn reg-btn--save" onClick={registration.openSaveDialog}>{page.saveLabel}</button>
           </div>
         </main>
       </div>
@@ -95,9 +97,11 @@ export default function PatientRegistrationPage() {
         isOpen={registration.showDialog}
         isSaving={registration.isSaving}
         saveSuccess={registration.saveSuccess}
+        saveError={registration.saveError}
         patientName={registration.patient.name}
         patientAge={registration.patient.age}
         patientPhone={registration.patient.phone}
+        patientGender={registration.patient.gender}
         cases={registration.cases}
         completeDenture={registration.options.completeDenture}
         singleDenture={registration.options.singleDenture}

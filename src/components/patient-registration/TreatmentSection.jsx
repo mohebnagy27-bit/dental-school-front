@@ -1,4 +1,4 @@
-import { BRIDGE_OPTIONS, ORTHODONTIC_OPTIONS, SCALING_OPTIONS } from './constants';
+import { PATIENT_REGISTRATION_CONFIG } from '../../config/patientRegistration';
 import FormSection from './FormSection';
 import ToothPicker from './ToothPicker';
 
@@ -17,46 +17,40 @@ function RadioChoices({ name, options, value, onChange, formatOption = (option) 
 }
 
 export default function TreatmentSection({ treatment, error, isUnlocked, sectionRef, onChange, onAdd }) {
+  const { treatment: labels } = PATIENT_REGISTRATION_CONFIG.sections;
+
   return (
-    <FormSection title="Treatment Options" locked={!isUnlocked} sectionRef={sectionRef}>
-      <fieldset className="reg-fieldset">
-        <legend className="reg-fieldset__legend">Scaling</legend>
-        <RadioChoices name="scaling" options={SCALING_OPTIONS} value={treatment.scaling} onChange={(value) => onChange('scaling', value)} onClear={() => onChange('scaling', '')} />
-      </fieldset>
-
-      <fieldset className="reg-fieldset">
-        <legend className="reg-fieldset__legend">Orthodontic</legend>
-        <RadioChoices name="orthodontic" options={ORTHODONTIC_OPTIONS} value={treatment.orthodontic} onChange={(value) => onChange('orthodontic', value)} onClear={() => onChange('orthodontic', '')} />
-      </fieldset>
-
-      <fieldset className="reg-fieldset">
-        <legend className="reg-fieldset__legend">Bridge</legend>
-        <RadioChoices name="bridge" options={BRIDGE_OPTIONS} value={treatment.bridge} formatOption={(option) => `${option} Bridge`} onChange={(value) => onChange('bridge', value)} onClear={() => onChange('bridge', '')} />
-        {treatment.bridge && <div className="reg-subsection"><ToothPicker selected={treatment.bridgeTeeth} onChange={(value) => onChange('bridgeTeeth', value)} label="Select missing / pontic teeth:" /></div>}
-      </fieldset>
-
-      <fieldset className="reg-fieldset">
-        <legend className="reg-fieldset__legend">Partial Denture</legend>
-        <label className="reg-checkbox-label">
-          <input type="checkbox" checked={treatment.partial} onChange={(event) => onChange('partial', event.target.checked)} />
-          Include Partial Denture in treatment plan
-        </label>
-        {treatment.partial && <div className="reg-subsection"><ToothPicker selected={treatment.partialTeeth} onChange={(value) => onChange('partialTeeth', value)} label="Select missing teeth involved:" /></div>}
-      </fieldset>
-
-      <fieldset className="reg-fieldset">
-        <legend className="reg-fieldset__legend">Implant</legend>
-        <label className="reg-checkbox-label">
-          <input type="checkbox" checked={treatment.implant} onChange={(event) => onChange('implant', event.target.checked)} />
-          Include Implant in treatment plan
-        </label>
-        {treatment.implant && <div className="reg-subsection"><ToothPicker selected={treatment.implantTeeth} onChange={(value) => onChange('implantTeeth', value)} label="Select implant site teeth:" /></div>}
-      </fieldset>
+    <FormSection title={labels.title} locked={!isUnlocked} sectionRef={sectionRef}>
+      {PATIENT_REGISTRATION_CONFIG.treatmentPlans.map((plan) => (
+        <fieldset key={plan.id} className="reg-fieldset">
+          <legend className="reg-fieldset__legend">{plan.label}</legend>
+          {plan.control === 'radio' ? (
+            <RadioChoices
+              name={plan.id}
+              options={plan.options}
+              value={treatment[plan.id]}
+              formatOption={(option) => `${option}${plan.optionSuffix || ''}`}
+              onChange={(value) => onChange(plan.id, value)}
+              onClear={() => onChange(plan.id, '')}
+            />
+          ) : (
+            <label className="reg-checkbox-label">
+              <input type="checkbox" checked={treatment[plan.id]} onChange={(event) => onChange(plan.id, event.target.checked)} />
+              {plan.checkboxLabel}
+            </label>
+          )}
+          {treatment[plan.id] && plan.toothField && (
+            <div className="reg-subsection">
+              <ToothPicker selected={treatment[plan.toothField]} onChange={(value) => onChange(plan.toothField, value)} label={plan.toothPickerLabel} />
+            </div>
+          )}
+        </fieldset>
+      ))}
 
       {error && <p className="reg-form-error" role="alert">{error}</p>}
       <div className="reg-section__actions">
-        <button type="button" className="reg-btn reg-btn--primary" onClick={onAdd} disabled={!isUnlocked}>+ Add Treatment</button>
-        <span className="reg-section__actions-hint">Adds selected treatment options to the summary table.</span>
+        <button type="button" className="reg-btn reg-btn--primary" onClick={onAdd} disabled={!isUnlocked}>{labels.addLabel}</button>
+        <span className="reg-section__actions-hint">{labels.addHint}</span>
       </div>
     </FormSection>
   );

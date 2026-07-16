@@ -1,6 +1,11 @@
 import apiClient from './apiClient.js';
 import { API_ENDPOINTS } from '../config/api.js';
 
+export async function updateStudentProfile(academicYear) {
+  const response = await apiClient.patch(API_ENDPOINTS.student.updateProfile, { academicYear });
+  return response.data;
+}
+
 export async function getPatients() {
   const response = await apiClient.get(API_ENDPOINTS.student.getPatients);
   return response.data;

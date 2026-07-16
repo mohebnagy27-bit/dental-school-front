@@ -1,53 +1,36 @@
 import React, { useState, useEffect } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import Sidebar from '../../components/dashboard/Sidebar';
 import Topbar from '../../components/dashboard/Topbar';
+import {
+  getCompletedCases,
+  getReservedCases,
+  updateStudentProfile,
+} from '../../services/studentService';
+import { useAuth } from '../../context/AuthContext';
+import { getResponseList } from '../../lib/studentData';
 import '../../styles/student/StudentProfilePage.css';
 
-/* ================================================================
-   MOCK DATA
-   ================================================================ */
+const normalizeProfile = (student, studentId) => ({
+  id: student?.id || student?.studentId || studentId || '',
+  name: student?.name || student?.fullName || '',
+  phone: student?.phone || student?.phoneNumber || '',
+  academicYear: student?.academicYear || student?.year || '',
+  collegeName: student?.collegeName || '',
+});
 
-const MOCK_PROFILE = {
-  name:     'Sarah Johnson',
-  id:       'STU-20240001',
-  year:     '3rd Year',
-  email:    'sarah.johnson@dental.edu',
-  phone:    '+20 100 123 4567',
-  joinDate: 'September 2022',
+const getInitials = (name = '') => name
+  .split(' ')
+  .filter(Boolean)
+  .map((part) => part[0])
+  .join('')
+  .toUpperCase()
+  .slice(0, 2);
+
+const formatValue = (value) => {
+  if (value === undefined || value === null || value === '') return '—';
+  return String(value);
 };
-
-const MOCK_STATS = {
-  reserved:  4,
-  active:    2,
-  completed: 8,
-};
-
-const MOCK_RESERVED = [
-  { id: 'r1', patient: 'Ahmed Hassan',  tooth: 16, diagnosis: 'Caries — Class II',  date: '2024-03-01' },
-  { id: 'r2', patient: 'Fatima Malik',  tooth: 17, diagnosis: 'Remaining Root',     date: '2024-03-05' },
-  { id: 'r3', patient: 'Omar Khalid',   tooth: 47, diagnosis: 'Caries — Class II',  date: '2024-03-08' },
-  { id: 'r4', patient: 'Layla Ibrahim', tooth: 26, diagnosis: 'Extraction',         date: '2024-03-10' },
-];
-
-const MOCK_COMPLETED = [
-  { id: 'c1', patient: 'Mohammed Ali', tooth: 36, diagnosis: 'Extraction',         date: '2024-02-14' },
-  { id: 'c2', patient: 'Sara Ahmed',   tooth: 46, diagnosis: 'Remaining Root',     date: '2024-02-20' },
-  { id: 'c3', patient: 'Ahmed Hassan', tooth: 11, diagnosis: 'Caries — Class IV',  date: '2024-02-28' },
-  { id: 'c4', patient: 'Hana Youssef', tooth: 21, diagnosis: 'Caries — Class III', date: '2024-01-30' },
-  { id: 'c5', patient: 'Karim Nasser', tooth: 14, diagnosis: 'Extraction',         date: '2024-01-22' },
-];
-
-/* ================================================================
-   HELPERS
-   ================================================================ */
-
-const formatDate = (iso) => {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-};
-
-const getInitials = (name) =>
-  name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 
 /* ================================================================
    STAT CARD (inline — no external dependency on shared StatCard API)
@@ -69,20 +52,19 @@ const ProfileStatCard = ({ label, value, color, icon }) => (
    EDIT PROFILE DIALOG
    ================================================================ */
 
-const EditProfileDialog = ({ open, initialValues, onSave, onCancel }) => {
-  const [form, setForm] = useState({ name: '', phone: '', email: '' });
+const EditProfileDialog = ({ open, initialValues, onSave, onCancel, isSaving }) => {
+  const [academicYear, setAcademicYear] = useState('');
 
   /* Sync when dialog opens */
   useEffect(() => {
-    if (open) setForm({ name: initialValues.name, phone: initialValues.phone, email: initialValues.email });
+    if (open) {
+      setAcademicYear(initialValues.academicYear || '');
+    }
   }, [open, initialValues]);
 
   if (!open) return null;
 
-  const handleChange = (e) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-
-  const canSave = form.name.trim().length >= 2 && form.email.trim().includes('@');
+  const canSave = Boolean(academicYear);
 
   return (
     <div
@@ -107,46 +89,18 @@ const EditProfileDialog = ({ open, initialValues, onSave, onCancel }) => {
 
         <div className="sp-dialog__body">
           <div className="sp-field">
-            <label className="sp-field__label" htmlFor="edit-name">Full Name <span aria-hidden="true">*</span></label>
-            <input
-              id="edit-name"
-              type="text"
-              name="name"
+            <label className="sp-field__label" htmlFor="edit-academic-year">Academic Year <span aria-hidden="true">*</span></label>
+            <select
+              id="edit-academic-year"
               className="sp-input"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Full name"
-              autoComplete="name"
-            />
-          </div>
-
-          <div className="sp-field">
-            <label className="sp-field__label" htmlFor="edit-phone">Phone Number</label>
-            <input
-              id="edit-phone"
-              type="tel"
-              name="phone"
-              className="sp-input"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="e.g. +20 100 123 4567"
-              autoComplete="tel"
-              style={{ fontSize: 'max(16px, 0.875rem)' }}
-            />
-          </div>
-
-          <div className="sp-field">
-            <label className="sp-field__label" htmlFor="edit-email">Email Address <span aria-hidden="true">*</span></label>
-            <input
-              id="edit-email"
-              type="email"
-              name="email"
-              className="sp-input"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="you@example.com"
-              autoComplete="email"
-            />
+              value={academicYear}
+              onChange={(event) => setAcademicYear(event.target.value)}
+            >
+              <option value="" disabled>Select academic year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+              <option value="5th Year">5th Year</option>
+            </select>
           </div>
         </div>
 
@@ -157,10 +111,10 @@ const EditProfileDialog = ({ open, initialValues, onSave, onCancel }) => {
           <button
             type="button"
             className="sp-btn sp-btn--primary"
-            onClick={() => onSave(form)}
-            disabled={!canSave}
+            onClick={() => onSave(academicYear)}
+            disabled={!canSave || isSaving}
           >
-            Save Changes
+            {isSaving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
       </div>
@@ -189,74 +143,49 @@ const Toast = ({ msg, onClose }) => {
 };
 
 /* ================================================================
-   TABLE — reusable within this page
-   ================================================================ */
-
-const CasesTable = ({ rows, columns, emptyMsg }) => (
-  <div className="sp-table-wrap">
-    {rows.length === 0 ? (
-      <p className="sp-table-empty">{emptyMsg}</p>
-    ) : (
-      <table className="sp-table">
-        <thead>
-          <tr>
-            {columns.map((col) => (
-              <th key={col.key} className="sp-table__th">{col.label}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.id} className="sp-table__row">
-              {columns.map((col) => (
-                <td key={col.key} className="sp-table__td">
-                  {col.render ? col.render(row[col.key], row) : row[col.key]}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    )}
-  </div>
-);
-
-/* ================================================================
-   TABLE COLUMN DEFINITIONS
-   ================================================================ */
-
-const RESERVED_COLS = [
-  { key: 'patient',   label: 'Patient Name' },
-  { key: 'tooth',     label: 'Tooth Number', render: (v) => <span className="sp-tooth-chip">Tooth {v}</span> },
-  { key: 'diagnosis', label: 'Diagnosis' },
-  { key: 'date',      label: 'Reservation Date', render: (v) => formatDate(v) },
-];
-
-const COMPLETED_COLS = [
-  { key: 'patient',   label: 'Patient Name' },
-  { key: 'tooth',     label: 'Tooth Number', render: (v) => <span className="sp-tooth-chip">Tooth {v}</span> },
-  { key: 'diagnosis', label: 'Diagnosis' },
-  { key: 'date',      label: 'Completion Date', render: (v) => formatDate(v) },
-];
-
-/* ================================================================
    MAIN PAGE
    ================================================================ */
 
 export default function StudentProfilePage() {
   /* ── Sidebar ── */
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, updateUser } = useAuth();
+  const studentId = user?.id || localStorage.getItem('userId');
   useEffect(() => {
     if (sidebarOpen) document.body.classList.add('sidebar-open');
     else             document.body.classList.remove('sidebar-open');
     return () => document.body.classList.remove('sidebar-open');
   }, [sidebarOpen]);
 
-  /* ── Profile state ── */
-  const [profile,    setProfile]    = useState(MOCK_PROFILE);
   const [isEditing,  setIsEditing]  = useState(false);
   const [toastMsg,   setToastMsg]   = useState('');
   const toastTimer = React.useRef(null);
+
+  const { data: reservedCasesResponse } = useQuery({
+    queryKey: ['student-reserved-cases', studentId],
+    queryFn: () => getReservedCases(studentId),
+    enabled: Boolean(studentId),
+  });
+  const { data: completedCasesResponse } = useQuery({
+    queryKey: ['student-completed-cases', studentId],
+    queryFn: () => getCompletedCases(studentId),
+    enabled: Boolean(studentId),
+  });
+  const updateProfileMutation = useMutation({
+    mutationFn: updateStudentProfile,
+    onSuccess: (_, academicYear) => {
+      updateUser({ academicYear });
+      setIsEditing(false);
+      showToast('Profile updated successfully.');
+    },
+    onError: (error) => {
+      showToast(error.response?.data?.message || error.userMessage || 'Unable to update the profile. Please try again.');
+    },
+  });
+
+  const profile = normalizeProfile(user, studentId);
+  const reservedCases = getResponseList(reservedCasesResponse);
+  const completedCases = getResponseList(completedCasesResponse);
 
   /* ── Toast helper ── */
   const showToast = (msg) => {
@@ -268,10 +197,8 @@ export default function StudentProfilePage() {
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   /* ── Edit save ── */
-  const handleSave = (form) => {
-    setProfile((prev) => ({ ...prev, name: form.name, phone: form.phone, email: form.email }));
-    setIsEditing(false);
-    showToast('Profile updated successfully.');
+  const handleSave = (academicYear) => {
+    updateProfileMutation.mutate(academicYear);
   };
 
   /* ── Stat icon SVGs ── */
@@ -280,12 +207,6 @@ export default function StudentProfilePage() {
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <path d="M4 5h12a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.5" />
         <path d="M7 3v4M13 3v4M3 9h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    ),
-    active: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M10 6v4l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
     completed: (
@@ -304,7 +225,11 @@ export default function StudentProfilePage() {
       )}
 
       <div className="dashboard-main">
-        <Topbar onMenuClick={() => setSidebarOpen(true)} />
+        <Topbar
+          pageTitle="Student Profile"
+          user={{ name: profile.name, id: profile.id, initials: getInitials(profile.name) }}
+          onMenuClick={() => setSidebarOpen(true)}
+        />
 
         <main className="dashboard-content sp">
 
@@ -327,18 +252,10 @@ export default function StudentProfilePage() {
                       <rect x="1.5" y="2.5" width="10" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
                       <path d="M4 1.5v2M9 1.5v2M1.5 5.5h10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                     </svg>
-                    {profile.id}
+                    {formatValue(profile.id)}
                   </span>
                   <span className="sp-meta-dot" aria-hidden="true">·</span>
-                  <span className="sp-meta-item">{profile.year}</span>
-                  <span className="sp-meta-dot" aria-hidden="true">·</span>
-                  <span className="sp-meta-item">
-                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                      <path d="M2 3.5C2 3.5 6.5 6.5 11 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                      <rect x="1.5" y="2.5" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-                    </svg>
-                    {profile.email}
-                  </span>
+                  <span className="sp-meta-item">{formatValue(profile.academicYear)}</span>
                 </div>
               </div>
             </div>
@@ -363,19 +280,13 @@ export default function StudentProfilePage() {
           <div className="sp-stats-row">
             <ProfileStatCard
               label="Reserved Cases"
-              value={MOCK_STATS.reserved}
+              value={reservedCases.length}
               color="#F97316"
               icon={icons.reserved}
             />
             <ProfileStatCard
-              label="Active Cases"
-              value={MOCK_STATS.active}
-              color="#1D6FD8"
-              icon={icons.active}
-            />
-            <ProfileStatCard
               label="Completed Cases"
-              value={MOCK_STATS.completed}
+              value={completedCases.length}
               color="#22C55E"
               icon={icons.completed}
             />
@@ -392,74 +303,27 @@ export default function StudentProfilePage() {
               <dl className="sp-info-grid">
                 <div className="sp-info-item">
                   <dt>Full Name</dt>
-                  <dd>{profile.name}</dd>
+                  <dd>{formatValue(profile.name)}</dd>
                 </div>
                 <div className="sp-info-item">
                   <dt>Student ID</dt>
-                  <dd>
-                    <span className="sp-id-chip">{profile.id}</span>
-                  </dd>
+                  <dd><span className="sp-id-chip">{formatValue(profile.id)}</span></dd>
                 </div>
                 <div className="sp-info-item">
                   <dt>Academic Year</dt>
-                  <dd>{profile.year}</dd>
+                  <dd>{formatValue(profile.academicYear)}</dd>
+                </div>
+                <div className="sp-info-item">
+                  <dt>College/Faculty Name</dt>
+                  <dd>{formatValue(profile.collegeName)}</dd>
                 </div>
                 <div className="sp-info-item">
                   <dt>Phone Number</dt>
-                  <dd>{profile.phone}</dd>
-                </div>
-                <div className="sp-info-item">
-                  <dt>Email Address</dt>
-                  <dd>
-                    <a href={`mailto:${profile.email}`} className="sp-email-link">{profile.email}</a>
-                  </dd>
-                </div>
-                <div className="sp-info-item">
-                  <dt>Joined</dt>
-                  <dd>{profile.joinDate}</dd>
+                  <dd>{formatValue(profile.phone)}</dd>
                 </div>
               </dl>
             </div>
           </section>
-
-          {/* ══════════════════════════════════
-              RECENT RESERVED CASES
-              ══════════════════════════════════ */}
-          <section className="sp-section">
-            <div className="sp-section__header">
-              <h2 className="sp-section__title">Recent Reserved Cases</h2>
-              <span className="sp-section__badge sp-section__badge--reserved">
-                {MOCK_RESERVED.length} cases
-              </span>
-            </div>
-            <div className="sp-section__body sp-section__body--no-pad">
-              <CasesTable
-                rows={MOCK_RESERVED}
-                columns={RESERVED_COLS}
-                emptyMsg="No reserved cases yet."
-              />
-            </div>
-          </section>
-
-          {/* ══════════════════════════════════
-              RECENT COMPLETED CASES
-              ══════════════════════════════════ */}
-          <section className="sp-section">
-            <div className="sp-section__header">
-              <h2 className="sp-section__title">Recent Completed Cases</h2>
-              <span className="sp-section__badge sp-section__badge--completed">
-                {MOCK_COMPLETED.length} cases
-              </span>
-            </div>
-            <div className="sp-section__body sp-section__body--no-pad">
-              <CasesTable
-                rows={MOCK_COMPLETED}
-                columns={COMPLETED_COLS}
-                emptyMsg="No completed cases yet."
-              />
-            </div>
-          </section>
-
         </main>
       </div>
 
@@ -469,6 +333,7 @@ export default function StudentProfilePage() {
         initialValues={profile}
         onSave={handleSave}
         onCancel={() => setIsEditing(false)}
+        isSaving={updateProfileMutation.isPending}
       />
 
       {/* ── Toast ── */}

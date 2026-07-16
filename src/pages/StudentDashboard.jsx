@@ -174,9 +174,9 @@ export default function StudentDashboard() {
             <div className="student-profile-card__info">
               <h2 className="student-profile-card__name">{studentProfile.name}</h2>
               <div className="student-profile-card__meta">
-                <span className="student-profile-card__tag" />
+                <span className="student-profile-card__tag" >
+                {studentProfile.academicYear}</span>
                 <span className="student-profile-card__id">{studentProfile.id}</span>
-                <span className="student-profile-card__id">{studentProfile.phoneNumber}</span>
                 <span className="student-profile-card__program" />
               </div>
             </div>

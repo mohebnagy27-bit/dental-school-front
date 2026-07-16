@@ -98,6 +98,7 @@ export function getStudentProfile(user, fallbackId = '') {
     id: user?.id || fallbackId,
     initials,
     role: 'Student',
+    academicYear: user?.academicYear || '—',
   };
 }
 

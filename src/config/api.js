@@ -47,6 +47,7 @@ export const API_ENDPOINTS = {
     updateNotes:      (id)     => `${API_BASE_URL}/api/student/cases/${id}/notes`,
     getReservedCases: `${API_BASE_URL}/api/student/my-cases/reserved`,
     getCompletedCases:`${API_BASE_URL}/api/student/my-cases/completed`,
+    updateProfile: `${API_BASE_URL}/api/student/profile`,
   },
 
   // ─────────────────────────────────────────────

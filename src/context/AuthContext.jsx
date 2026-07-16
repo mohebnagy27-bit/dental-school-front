@@ -6,6 +6,7 @@ const TOKEN_KEY = 'token'
 const ROLE_KEY = 'role'
 const USER_ID_KEY = 'userId'
 const USER_NAME_KEY = 'userName'
+const STUDENT_PROFILE_KEY = 'studentProfile'
 const STUDENT_SESSION_KEY = 'df_student_id'
 
 function clearAuthenticationStorage() {
@@ -13,7 +14,18 @@ function clearAuthenticationStorage() {
   localStorage.removeItem(ROLE_KEY)
   localStorage.removeItem(USER_ID_KEY)
   localStorage.removeItem(USER_NAME_KEY)
+  localStorage.removeItem(STUDENT_PROFILE_KEY)
   sessionStorage.removeItem(STUDENT_SESSION_KEY)
+}
+
+function getStoredStudentProfile() {
+  try {
+    const profile = JSON.parse(localStorage.getItem(STUDENT_PROFILE_KEY) || 'null')
+    return profile && typeof profile === 'object' ? profile : null
+  } catch {
+    localStorage.removeItem(STUDENT_PROFILE_KEY)
+    return null
+  }
 }
 
 function isValidToken(token) {
@@ -40,13 +52,14 @@ function getStoredSession() {
   const role = localStorage.getItem(ROLE_KEY)
   const id = localStorage.getItem(USER_ID_KEY)
   const name = localStorage.getItem(USER_NAME_KEY)
+  const studentProfile = role === 'STUDENT' ? getStoredStudentProfile() : null
 
   if (!isValidToken(token) || !role || !id) {
     clearAuthenticationStorage()
     return { token: null, role: null, user: null }
   }
 
-  return { token, role, user: { id, name, role } }
+  return { token, role, user: { ...studentProfile, id, name, role } }
 }
 
 export function AuthProvider({ children }) {
@@ -59,8 +72,26 @@ export function AuthProvider({ children }) {
     localStorage.setItem(ROLE_KEY, role)
     localStorage.setItem(USER_ID_KEY, user.id)
     localStorage.setItem(USER_NAME_KEY, user.name)
+    if (role === 'STUDENT') {
+      localStorage.setItem(STUDENT_PROFILE_KEY, JSON.stringify(authenticatedUser))
+    } else {
+      localStorage.removeItem(STUDENT_PROFILE_KEY)
+    }
 
     setSession({ token, role, user: authenticatedUser })
+  }, [])
+
+  const updateUser = useCallback((updates) => {
+    setSession((currentSession) => {
+      if (!currentSession.user) return currentSession
+
+      const user = { ...currentSession.user, ...updates }
+      if (currentSession.role === 'STUDENT') {
+        localStorage.setItem(STUDENT_PROFILE_KEY, JSON.stringify(user))
+      }
+
+      return { ...currentSession, user }
+    })
   }, [])
 
   const logout = useCallback(() => {
@@ -78,9 +109,10 @@ export function AuthProvider({ children }) {
     token: session.token,
     role: session.role,
     login,
+    updateUser,
     logout,
     isAuthenticated: Boolean(session.token && session.user),
-  }), [session])
+  }), [session, login, updateUser, logout])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

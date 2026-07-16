@@ -196,8 +196,12 @@ export default function usePatientRegistration() {
   const openSaveDialog = useCallback(() => {
     setTouchedFields({ name: true, age: true, phone: true, gender: true });
     setSaveError('');
-    if (isPatientInfoValid) setShowDialog(true);
-  }, [isPatientInfoValid]);
+    if (!isPatientInfoValid) return;
+    if (!cases.length) {
+      setSaveError('At least one case is required before saving the patient record.');
+    }
+    setShowDialog(true);
+  }, [cases.length, isPatientInfoValid]);
 
   const closeSaveDialog = useCallback(() => {
     if (!isSaving && !saveSuccess) setShowDialog(false);
@@ -207,6 +211,11 @@ export default function usePatientRegistration() {
   const confirmSave = useCallback(async () => {
     if (registrationMutation.isPending) return;
     setSaveError('');
+    if (!cases.length) {
+      setSaveError('At least one case is required before saving the patient record.');
+      return;
+    }
+    console.log(patient, cases, options, medical)
     try {
       await registrationMutation.mutateAsync(createPatientRegistrationPayload({ patient, cases, options, medical }));
       setSaveSuccess(true);

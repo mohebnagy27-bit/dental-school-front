@@ -8,15 +8,7 @@ import { PasswordInput } from '../components/auth/PasswordInput'
 import { useDoctorLogin } from '../hooks/useAuthMutations'
 import '../styles/DoctorLoginPage.css'
 
-/**
- * DoctorLoginPage
- *
- * Fields:    Username, Password, Remember me checkbox
- * Validation: username (required, ≥3 chars), password (required)
- * On success: navigate to /doctor/dashboard
- *
- * Mock credentials:  username = "doctor"  |  password = "password123"
- */
+
 export default function DoctorLoginPage() {
   const navigate = useNavigate()
   const formRef  = useRef(null)

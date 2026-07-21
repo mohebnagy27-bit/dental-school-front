@@ -19,7 +19,7 @@ export default function PatientRegistrationPage() {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar role="student" isOpen={registration.sidebarOpen} onClose={() => registration.setSidebarOpen(false)} />
+      <Sidebar role="doctor" isOpen={registration.sidebarOpen} onClose={() => registration.setSidebarOpen(false)} />
       {registration.sidebarOpen && <div className="sidebar-overlay" onClick={() => registration.setSidebarOpen(false)} />}
 
       <div className="dashboard-main">
